@@ -5,13 +5,13 @@
     <textarea id="nameInput" placeholder="Add first names here..." style="width: 300px;height: 150px;"></textarea>
     <p id="output"></p>
 
-    <button onclick="doIt()">Assign</button>
+    <button onclick="assign()">Assign</button>
 
     <script>
-        function doIt() {
+        function assign() {
             let aNames = document.getElementById("nameInput").value.split(/[\n, ]/).filter(String),
-                aAssignments = createAssignments(aNames)
-            sTextValue = aAssignments.join("<br>");
+                aAssignments = createAssignments(aNames),
+                sTextValue = aAssignments.join("<br>");
 
             document.getElementById("output").innerHTML = sTextValue;
         }
