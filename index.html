@@ -9,7 +9,7 @@
 
     <script>
         function assign() {
-            let aNames = document.getElementById("nameInput").value.split(/[\n, ]/).filter(String),
+            let aNames = document.getElementById("nameInput").value.split(/[\n;, ]/).filter(String),
                 aAssignments = createAssignments(aNames),
                 sTextValue = aAssignments.join("<br>");
 
