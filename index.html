@@ -1,11 +1,48 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <!-- Styles for the chips -->
+    <style>
+      .chip {
+        display: inline-block;
+        padding: 0 12px;
+        height: 32px;
+        font-size: 13px;
+        line-height: 32px;
+        border-radius: 16px;
+        background-color: #f1f1f1;
+        margin-right: 4px;
+        cursor: pointer;
+      }
+
+      .chip-label {
+        display: inline-block;
+      }
+
+      .chip-close {
+        display: inline-block;
+        margin-left: 8px;
+        font-weight: bold;
+        cursor: pointer;
+      }
+    </style>
+  </head>
+
   <body>
     <div id="nameInputs">
       <div class="nameEntry">
         <input type="text" placeholder="Enter a name..." />
+        <button onclick="showExclusionModal(this)">Set Exclusions</button>
+        <span class="exclusions"></span>
         <button onclick="removeNameInput(this)">Remove</button>
       </div>
+    </div>
+
+    <!-- Exclusion Modal -->
+    <div id="exclusionModal" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border: 1px solid black">
+      <h3>Select Exclusions</h3>
+      <div id="exclusionOptions"></div>
+      <button onclick="saveExclusions()">Save</button>
     </div>
 
     <button onclick="addNameInput()">Add Another Name</button>
@@ -14,6 +51,91 @@
     <p id="output"></p>
 
     <script>
+      let currentExclusionButton = null;
+
+      function updateExclusionOptions() {
+        let inputs = document.querySelectorAll("#nameInputs input");
+        let names = Array.from(inputs)
+          .map((input) => input.value)
+          .filter(String);
+
+        let exclusionDiv = document.getElementById("exclusionOptions");
+        exclusionDiv.innerHTML = ""; // Clear current options
+
+        names.forEach((name) => {
+          if (!currentExclusionButton || name !== currentExclusionButton.previousElementSibling.value) {
+            let checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.value = name;
+            checkbox.id = "exclude_" + name;
+
+            let label = document.createElement("label");
+            label.htmlFor = "exclude_" + name;
+            label.innerText = name;
+
+            exclusionDiv.appendChild(checkbox);
+            exclusionDiv.appendChild(label);
+            exclusionDiv.appendChild(document.createElement("br"));
+          }
+        });
+      }
+
+      function showExclusionModal(button) {
+        currentExclusionButton = button;
+        updateExclusionOptions();
+
+        let exclusionsSpan = button.nextElementSibling;
+        let exclusions = Array.from(exclusionsSpan.querySelectorAll(".chip-label")).map((label) => label.innerText);
+
+        document.querySelectorAll("#exclusionOptions input").forEach((checkbox) => {
+          checkbox.checked = exclusions.includes(checkbox.value);
+        });
+
+        document.getElementById("exclusionModal").style.display = "block";
+      }
+
+      function saveExclusions() {
+        let selectedExclusions = [];
+        document.querySelectorAll("#exclusionOptions input:checked").forEach((checkbox) => {
+          selectedExclusions.push(checkbox.value);
+        });
+
+        let exclusionsSpan = currentExclusionButton.nextElementSibling;
+        exclusionsSpan.innerHTML = "";
+        selectedExclusions.forEach((exclusion) => {
+          let chip = document.createElement("span");
+          chip.className = "chip";
+
+          let label = document.createElement("span");
+          label.className = "chip-label";
+          label.innerText = exclusion;
+
+          let close = document.createElement("span");
+          close.className = "chip-close";
+          close.innerText = "X";
+          close.onclick = function () {
+            exclusionsSpan.removeChild(chip);
+          };
+
+          chip.appendChild(label);
+          chip.appendChild(close);
+          exclusionsSpan.appendChild(chip);
+        });
+
+        document.getElementById("exclusionModal").style.display = "none";
+        currentExclusionButton = null;
+      }
+
+      function removeNameFromExclusions(removedName) {
+        let chips = document.querySelectorAll(".chip");
+        chips.forEach((chip) => {
+          let chipLabel = chip.querySelector(".chip-label").innerText;
+          if (chipLabel === removedName) {
+            chip.parentElement.removeChild(chip);
+          }
+        });
+      }
+
       function addNameInput() {
         let nameEntryDiv = document.createElement("div");
         nameEntryDiv.className = "nameEntry";
@@ -21,6 +143,16 @@
         let input = document.createElement("input");
         input.type = "text";
         input.placeholder = "Enter a name...";
+        input.oninput = updateExclusionOptions;
+
+        let excludeButton = document.createElement("button");
+        excludeButton.innerText = "Set Exclusions";
+        excludeButton.onclick = function () {
+          showExclusionModal(excludeButton);
+        };
+
+        let exclusionsSpan = document.createElement("span");
+        exclusionsSpan.className = "exclusions";
 
         let removeButton = document.createElement("button");
         removeButton.innerText = "Remove";
@@ -29,13 +161,20 @@
         };
 
         nameEntryDiv.appendChild(input);
+        nameEntryDiv.appendChild(excludeButton);
+        nameEntryDiv.appendChild(exclusionsSpan);
         nameEntryDiv.appendChild(removeButton);
 
         document.getElementById("nameInputs").appendChild(nameEntryDiv);
+        updateExclusionOptions();
       }
 
       function removeNameInput(buttonElement) {
+        let nameInput = buttonElement.parentElement.querySelector("input");
+        let removedName = nameInput.value;
         document.getElementById("nameInputs").removeChild(buttonElement.parentElement);
+        updateExclusionOptions();
+        removeNameFromExclusions(removedName);
       }
 
       function assign() {
@@ -44,19 +183,37 @@
           .map((input) => input.value)
           .filter(String);
 
-        let assignments = createAssignments(names);
+        let exclusions = {};
+        inputs.forEach((input) => {
+          let name = input.value;
+          let exclusionsSpan = input.nextElementSibling.nextElementSibling;
+          exclusions[name] = Array.from(exclusionsSpan.querySelectorAll(".chip-label")).map((label) => label.innerText);
+        });
+
+        let assignments = createAssignments(names, exclusions);
         document.getElementById("output").innerHTML = assignments.join("<br>");
       }
 
-      function createAssignments(names) {
-        return names
-          .slice(0)
-          .sort(function () {
-            return Math.random() - 0.5;
-          })
-          .map(function (name, index, arr) {
-            return name + " -> " + arr[(index + 1) % arr.length];
-          });
+      function createAssignments(names, exclusions) {
+        let shuffledNames = names.slice(0).sort(function () {
+          return Math.random() - 0.5;
+        });
+
+        let assignments = [];
+        for (let i = 0; i < shuffledNames.length; i++) {
+          let currentName = shuffledNames[i];
+          let nextIndex = (i + 1) % shuffledNames.length;
+          let matchedName = shuffledNames[nextIndex];
+
+          while (exclusions[currentName] && exclusions[currentName].includes(matchedName)) {
+            nextIndex = (nextIndex + 1) % shuffledNames.length;
+            matchedName = shuffledNames[nextIndex];
+          }
+
+          assignments.push(currentName + " -> " + matchedName);
+        }
+
+        return assignments;
       }
     </script>
   </body>
