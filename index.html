@@ -1,28 +1,63 @@
 <!DOCTYPE html>
 <html>
+  <body>
+    <div id="nameInputs">
+      <div class="nameEntry">
+        <input type="text" placeholder="Enter a name..." />
+        <button onclick="removeNameInput(this)">Remove</button>
+      </div>
+    </div>
 
-<body>
-    <textarea id="nameInput" placeholder="Add first names here..." style="width: 300px;height: 150px;"></textarea>
-    <p id="output"></p>
-
+    <button onclick="addNameInput()">Add Another Name</button>
     <button onclick="assign()">Assign</button>
 
+    <p id="output"></p>
+
     <script>
-        function assign() {
-            let aNames = document.getElementById("nameInput").value.split(/[\n;, ]/).filter(String),
-                aAssignments = createAssignments(aNames),
-                sTextValue = aAssignments.join("<br>");
+      function addNameInput() {
+        let nameEntryDiv = document.createElement("div");
+        nameEntryDiv.className = "nameEntry";
 
-            document.getElementById("output").innerHTML = sTextValue;
-        }
+        let input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = "Enter a name...";
 
-        function createAssignments(names) {
-            return names.slice(0).sort(function () { return Math.random() - 0.5 }).map(function (name, index, arr) {
-                return name + " -> " + arr[(index + 1) % arr.length];
-            });
-        }
+        let removeButton = document.createElement("button");
+        removeButton.innerText = "Remove";
+        removeButton.onclick = function () {
+          removeNameInput(removeButton);
+        };
+
+        nameEntryDiv.appendChild(input);
+        nameEntryDiv.appendChild(removeButton);
+
+        document.getElementById("nameInputs").appendChild(nameEntryDiv);
+      }
+
+      function removeNameInput(buttonElement) {
+        document.getElementById("nameInputs").removeChild(buttonElement.parentElement);
+      }
+
+      function assign() {
+        let inputs = document.querySelectorAll("#nameInputs input");
+        let names = Array.from(inputs)
+          .map((input) => input.value)
+          .filter(String);
+
+        let assignments = createAssignments(names);
+        document.getElementById("output").innerHTML = assignments.join("<br>");
+      }
+
+      function createAssignments(names) {
+        return names
+          .slice(0)
+          .sort(function () {
+            return Math.random() - 0.5;
+          })
+          .map(function (name, index, arr) {
+            return name + " -> " + arr[(index + 1) % arr.length];
+          });
+      }
     </script>
-
-</body>
-
+  </body>
 </html>
