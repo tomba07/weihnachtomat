@@ -1,49 +1,61 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="script.js" defer></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
-    
   </head>
 
-  <body x-data="nameApp()">
-    <!-- Name Inputs -->
-    <div id="nameInputs">
+  <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()">
+    <div class="container mx-auto mt-10 p-4 bg-white rounded shadow-lg max-w-lg">
+      <!-- List of entered names -->
       <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
-        <div class="nameEntry">
-          <input type="text" x-model="nameEntry.name" placeholder="Enter a name..." @input="updateExclusionOptions" />
-          <button @click="showExclusionModal(nameEntry)">Set Exclusions</button>
-          <span class="exclusions">
+        <div class="flex flex-col mb-4 nameEntry">
+          <div class="flex items-center mb-2">
+            <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
+            <button @click="showExclusionModal(nameEntry)" class="bg-blue-500 text-white p-2 rounded mr-2">Set Exclusions</button>
+            <button @click="removeNameInput(nameEntry)" class="bg-red-500 text-white p-2 rounded">Remove</button>
+          </div>
+          <div class="exclusions ml-2">
             <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-              <span class="chip">
+              <span class="chip inline-flex items-center bg-gray-300 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
                 <span class="chip-label" x-text="exclusion"></span>
-                <span class="chip-close" @click="removeExclusion(nameEntry, exclusion)">X</span>
+                <span class="chip-close cursor-pointer ml-2 bg-red-500 h-5 w-5 rounded-full flex items-center justify-center text-white" @click="removeExclusion(nameEntry, exclusion)">×</span>
               </span>
             </template>
-          </span>
-          <button @click="removeNameInput(nameEntry)">Remove</button>
+          </div>
         </div>
       </template>
+
+      <!-- Input for a new name -->
+      <div class="flex items-center mb-4">
+        <input type="text" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" />
+        <button @click="addNewName()" class="bg-green-500 text-white p-2 rounded">Done</button>
+      </div>
     </div>
 
     <!-- Exclusion Modal -->
-    <div x-show="exclusionModalVisible" class="modal">
-      <h3>Select Exclusions</h3>
-      <div>
-        <template x-for="name in availableExclusions">
-          <div>
-            <input type="checkbox" :value="name" x-model="currentExclusions" />
-            <label x-text="name"></label>
-          </div>
-        </template>
+    <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center">
+      <div class="bg-white p-8 rounded shadow-lg">
+        <h3 class="text-xl mb-4">Select Exclusions</h3>
+        <div class="mb-4">
+          <template x-for="name in availableExclusions">
+            <div class="flex items-center mb-2">
+              <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
+              <label x-text="name"></label>
+            </div>
+          </template>
+        </div>
+        <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
       </div>
-      <button @click="saveExclusions()">Save</button>
     </div>
 
-    <button @click="addNameInput()">Add Another Name</button>
-    <button @click="assign()">Assign</button>
+    <div class="container mx-auto mt-4 max-w-lg">
+      <button @click="assign()" class="bg-indigo-500 text-white p-2 rounded">Assign</button>
+    </div>
 
-    <p id="output" x-html="output"></p>
+    <div class="container mx-auto mt-10 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
+      <p id="output" x-html="output"></p>
+    </div>
   </body>
 </html>

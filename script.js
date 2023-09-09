@@ -1,14 +1,26 @@
 function nameApp() {
   return {
-    nameEntries: [{ id: Date.now(), name: "", exclusions: [] }],
+    nameEntries: [],
     exclusionModalVisible: false,
     availableExclusions: [],
     currentExclusions: [],
     currentNameEntry: null,
     output: "",
+    newName: "",
 
     updateExclusionOptions() {
-      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
+      this.availableExclusions = this.nameEntries
+        .map((entry) => entry.name)
+        .filter(Boolean);
+    },
+
+    addNewName() {
+        if (this.newName && !this.nameEntries.some(entry => entry.name === this.newName)) {
+            this.nameEntries.push({ id: Date.now(), name: this.newName, exclusions: [] });
+            this.newName = "";
+        } else {
+            alert("Please enter a unique name.");
+        }
     },
 
     showExclusionModal(nameEntry) {
@@ -18,13 +30,25 @@ function nameApp() {
       this.exclusionModalVisible = true;
     },
 
+    markAsDone(nameEntry) {
+      let names = this.nameEntries.map((entry) => entry.name);
+      let nameOccurrences = names.filter((name) => name === nameEntry.name).length;
+
+      if (nameOccurrences > 1) {
+        alert("This name already exists. Please enter a unique name.");
+        return;
+      }
+
+      this.addNameInput();
+    },
+
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
       this.exclusionModalVisible = false;
     },
 
     addNameInput() {
-      this.nameEntries.push({ id: Date.now(), name: "", exclusions: [] });
+      this.nameEntries.push({ id: Date.now(), name: "", exclusions: [], done: false });
     },
 
     removeNameInput(nameEntry) {
@@ -43,68 +67,81 @@ function nameApp() {
     },
 
     assign() {
-      let names = this.nameEntries.map((entry) => entry.name).filter(Boolean);
+      let names = this.nameEntries
+        .map((entry) => entry.name);
       let exclusions = {};
-      this.nameEntries.forEach((entry) => {
-        exclusions[entry.name] = entry.exclusions;
-      });
+      this.nameEntries
+        .forEach((entry) => {
+          exclusions[entry.name] = entry.exclusions;
+        });
 
       let assignments = this.createAssignments(names, exclusions);
       this.output = assignments.join("<br>");
     },
 
     createAssignments(names, exclusions) {
-      let shuffledNames = [...names].sort(() => Math.random() - 0.5);
+      let shuffledNames = this.shuffleNames([...names]);
+      let assignmentsDict = this.initializeAssignmentsDict(shuffledNames);
+      let recipients = this.assignGifts(shuffledNames, exclusions, assignmentsDict);
+      let leftOutPeople = this.getLeftOutPeople(shuffledNames, recipients);
+      this.assignLeftOutPeople(leftOutPeople, shuffledNames, exclusions, assignmentsDict);
+      return this.formatAssignments(assignmentsDict);
+    },
 
-      let assignmentsDict = {}; // Dictionary to hold assignments
-      let recipients = new Set(); // To keep track of who has been assigned a gift
+    shuffleNames(names) {
+      return names.sort(() => Math.random() - 0.5);
+    },
 
-      for (let i = 0; i < shuffledNames.length; i++) {
-        let currentName = shuffledNames[i];
-        let nextIndex = (i + 1) % shuffledNames.length;
-        let matchedName = shuffledNames[nextIndex];
-        let attempts = 0; // Counter to track attempts to find a match
+    initializeAssignmentsDict(names) {
+      let dict = {};
+      names.forEach((name) => (dict[name] = []));
+      return dict;
+    },
+
+    assignGifts(names, exclusions, assignmentsDict) {
+      let recipients = new Set();
+      for (let i = 0; i < names.length; i++) {
+        let currentName = names[i];
+        let nextIndex = (i + 1) % names.length;
+        let matchedName = names[nextIndex];
+        let attempts = 0;
 
         while (currentName === matchedName || (exclusions[currentName] && exclusions[currentName].includes(matchedName))) {
-          nextIndex = (nextIndex + 1) % shuffledNames.length;
-          matchedName = shuffledNames[nextIndex];
+          nextIndex = (nextIndex + 1) % names.length;
+          matchedName = names[nextIndex];
           attempts++;
 
           if (attempts >= names.length) {
-            matchedName = "No one"; // Assigning "No one" as the match
-            break; // Exit the loop
+            matchedName = "No one";
+            break;
           }
         }
 
         if (matchedName !== "No one") {
           recipients.add(matchedName);
         }
-
-        if (!assignmentsDict[currentName]) {
-          assignmentsDict[currentName] = [];
-        }
         assignmentsDict[currentName].push(matchedName);
       }
+      return recipients;
+    },
 
-      // Identify the left-out people
-      let leftOutPeople = shuffledNames.filter((name) => !recipients.has(name));
+    getLeftOutPeople(names, recipients) {
+      return names.filter((name) => !recipients.has(name));
+    },
 
-      // Shuffle the potential gifters
-      let potentialGifters = shuffledNames.filter((name) => name !== "No one");
+    assignLeftOutPeople(leftOutPeople, names, exclusions, assignmentsDict) {
+      let potentialGifters = names.filter((name) => name !== "No one");
       potentialGifters.sort(() => Math.random() - 0.5);
 
-      // Assign the left-out people to the shuffled gifters
       leftOutPeople.forEach((person) => {
         let triedGifters = new Set();
         let gifterIndex = Math.floor(Math.random() * potentialGifters.length);
         let gifter = potentialGifters[gifterIndex];
 
-        // Ensure a person isn't matched with themselves and respect exclusions
         while (gifter === person || (exclusions[gifter] && exclusions[gifter].includes(person)) || triedGifters.has(gifter)) {
           triedGifters.add(gifter);
 
           if (triedGifters.size >= potentialGifters.length) {
-            // We've tried all potential gifters for this person and none are valid
             gifter = "No one";
             break;
           }
@@ -118,13 +155,13 @@ function nameApp() {
         }
         assignmentsDict[gifter].push(person);
       });
+    },
 
-      // Convert the dictionary to a list format for display
+    formatAssignments(assignmentsDict) {
       let assignmentsList = [];
       for (let gifter in assignmentsDict) {
         assignmentsList.push(gifter + " -> " + assignmentsDict[gifter].join(", "));
       }
-
       return assignmentsList;
     }
   };
