@@ -1,8 +1,9 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="script.js" defer></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+    <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
 
@@ -13,24 +14,47 @@
         <div class="flex flex-col mb-4 nameEntry">
           <div class="flex items-center mb-2">
             <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-            <button @click="showExclusionModal(nameEntry)" class="bg-blue-500 text-white p-2 rounded mr-2">Set Exclusions</button>
-            <button @click="removeNameInput(nameEntry)" class="bg-red-500 text-white p-2 rounded">Remove</button>
+            <button @click="showExclusionModal(nameEntry)" class="bg-blue-500 text-white p-2 rounded mr-2">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+              </svg>
+            </button>
+
+            <button @click="removeNameInput(nameEntry)" class="bg-red-500 text-white p-2 rounded">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                />
+              </svg>
+            </button>
           </div>
-          <div class="exclusions ml-2">
+          <span class="exclusions mr-2">
             <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-              <span class="chip inline-flex items-center bg-gray-300 rounded-full px-3 py-1 text-sm font-semibold text-gray-700 mr-2 mb-2">
-                <span class="chip-label" x-text="exclusion"></span>
-                <span class="chip-close cursor-pointer ml-2 bg-red-500 h-5 w-5 rounded-full flex items-center justify-center text-white" @click="removeExclusion(nameEntry, exclusion)">×</span>
-              </span>
+              <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-500 py-2 px-3.5 align-baseline font-sans text-xs font-bold uppercase leading-none text-white" data-dismissible="chip">
+                <div class="mr-5 mt-px" x-text="exclusion"></div>
+                <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md bg-gray-600 transition-colors hover:bg-gray-700" data-dismissible-target="chip">
+                  <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                  </div>
+                </div>
+              </div>
             </template>
-          </div>
+          </span>
         </div>
       </template>
 
       <!-- Input for a new name -->
       <div class="flex items-center mb-4">
         <input type="text" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" />
-        <button @click="addNewName()" class="bg-green-500 text-white p-2 rounded">Done</button>
+        <button @click="addNewName()" class="bg-green-500 text-white p-2 rounded">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" />
+          </svg>
+        </button>
       </div>
     </div>
 
