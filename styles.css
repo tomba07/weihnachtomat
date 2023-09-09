@@ -1,0 +1,30 @@
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  padding: 20px;
+  border: 1px solid black;
+}
+
+.chip {
+  display: inline-block;
+  padding: 5px 10px;
+  margin: 2px;
+  background-color: #f1f1f1;
+  border-radius: 15px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: #333;
+}
+
+.chip-label {
+  margin-right: 5px;
+}
+
+.chip-close {
+  cursor: pointer;
+  color: #999;
+  font-weight: bold;
+}
