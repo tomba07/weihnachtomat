@@ -9,18 +9,16 @@ function nameApp() {
     newName: "",
 
     updateExclusionOptions() {
-      this.availableExclusions = this.nameEntries
-        .map((entry) => entry.name)
-        .filter(Boolean);
+      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
     },
 
     addNewName() {
-        if (this.newName && !this.nameEntries.some(entry => entry.name === this.newName)) {
-            this.nameEntries.push({ id: Date.now(), name: this.newName, exclusions: [] });
-            this.newName = "";
-        } else {
-            alert("Please enter a unique name.");
-        }
+      if (this.newName && !this.nameEntries.some((entry) => entry.name === this.newName)) {
+        this.nameEntries.push({ id: Date.now(), name: this.newName, exclusions: [] });
+        this.newName = "";
+      } else {
+        alert("Please enter a unique name.");
+      }
     },
 
     showExclusionModal(nameEntry) {
@@ -67,13 +65,11 @@ function nameApp() {
     },
 
     assign() {
-      let names = this.nameEntries
-        .map((entry) => entry.name);
+      let names = this.nameEntries.map((entry) => entry.name);
       let exclusions = {};
-      this.nameEntries
-        .forEach((entry) => {
-          exclusions[entry.name] = entry.exclusions;
-        });
+      this.nameEntries.forEach((entry) => {
+        exclusions[entry.name] = entry.exclusions;
+      });
 
       let assignments = this.createAssignments(names, exclusions);
       this.output = assignments.join("<br>");
@@ -99,38 +95,30 @@ function nameApp() {
     },
 
     assignGifts(names, exclusions, assignmentsDict) {
-      let recipients = new Set();
-      for (let i = 0; i < names.length; i++) {
-        let currentName = names[i];
-        let nextIndex = (i + 1) % names.length;
-        let matchedName = names[nextIndex];
-        let attempts = 0;
+      let unassignedRecipients = new Set(names);
 
-        while (currentName === matchedName || (exclusions[currentName] && exclusions[currentName].includes(matchedName))) {
-          nextIndex = (nextIndex + 1) % names.length;
-          matchedName = names[nextIndex];
-          attempts++;
+      names.forEach((gifter) => {
+        let potentialRecipients = Array.from(unassignedRecipients).filter((name) => name !== gifter && (!exclusions[gifter] || !exclusions[gifter].includes(name)));
 
-          if (attempts >= names.length) {
-            matchedName = "No one";
-            break;
-          }
+        if (potentialRecipients.length === 0) {
+          // Reset and try again
+          unassignedRecipients = new Set(names.filter((name) => name !== gifter));
+          potentialRecipients = Array.from(unassignedRecipients).filter((name) => name !== gifter && (!exclusions[gifter] || !exclusions[gifter].includes(name)));
         }
 
-        if (matchedName !== "No one") {
-          recipients.add(matchedName);
-        }
-        assignmentsDict[currentName].push(matchedName);
-      }
-      return recipients;
+        let recipient = potentialRecipients[Math.floor(Math.random() * potentialRecipients.length)];
+        assignmentsDict[gifter].push(recipient);
+        unassignedRecipients.delete(recipient);
+      });
+
+      return unassignedRecipients;
     },
-
     getLeftOutPeople(names, recipients) {
       return names.filter((name) => !recipients.has(name));
     },
 
     assignLeftOutPeople(leftOutPeople, names, exclusions, assignmentsDict) {
-      let potentialGifters = names.filter((name) => name !== "No one");
+      let potentialGifters = names.filter((name) => name !== "No one" && assignmentsDict[name].length === 0); // Only consider gifters who haven't been assigned yet
       potentialGifters.sort(() => Math.random() - 0.5);
 
       leftOutPeople.forEach((person) => {
@@ -150,13 +138,15 @@ function nameApp() {
           gifter = potentialGifters[gifterIndex];
         }
 
-        if (!assignmentsDict[gifter]) {
-          assignmentsDict[gifter] = [];
+        if (gifter !== "No one" && assignmentsDict[gifter]) {
+          assignmentsDict[gifter].push(person);
+          const gifterPosition = potentialGifters.indexOf(gifter);
+          if (gifterPosition > -1) {
+            potentialGifters.splice(gifterPosition, 1); // Remove the gifter from the potential gifter list
+          }
         }
-        assignmentsDict[gifter].push(person);
       });
     },
-
     formatAssignments(assignmentsDict) {
       let assignmentsList = [];
       for (let gifter in assignmentsDict) {
