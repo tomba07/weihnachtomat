@@ -14,12 +14,12 @@
           <div class="flex flex-col mb-4 border-b border-gray-100">
             <div class="flex items-center mb-2">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-              <button @click="showExclusionModal(nameEntry)" class="bg-transparent border border-blue-500 text-blue-500 p-2 rounded mr-2">
+              <button @click="showExclusionModal(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </button>
-              <button @click="removeNameInput(nameEntry)" class="bg-transparent border border-red-500 text-red-500 p-2 rounded">
+              <button @click="removeNameInput(nameEntry)" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path
                     stroke-linecap="round"
@@ -31,7 +31,7 @@
             </div>
             <span>
               <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-                <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs font-bold leading-none" data-dismissible="chip">
+                <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs leading-none" data-dismissible="chip">
                   <div class="mr-5 mt-px" x-text="exclusion"></div>
                   <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
                     <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
@@ -48,7 +48,7 @@
         <!-- Input for a new name -->
         <form @submit.prevent="addNewName()" class="flex mb-4">
           <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
-          <button type="submit" class="bg-green-500 text-white p-2 rounded">Add</button>
+          <button type="submit" class="bg-blue-500 text-white p-2 rounded">Add</button>
         </form>
       </div>
       <div class="mt-4">
