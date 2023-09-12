@@ -7,6 +7,7 @@ function nameApp() {
     currentNameEntry: null,
     output: "",
     newName: "",
+    selectAllExclusions: false,
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
@@ -21,6 +22,15 @@ function nameApp() {
 
     updateExclusionOptions() {
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
+    },
+
+    toggleAllExclusions() {
+      this.selectAllExclusions = !this.selectAllExclusions;
+      if (this.selectAllExclusions) {
+        this.currentExclusions = [...this.availableExclusions];
+      } else {
+        this.currentExclusions = [];
+      }
     },
 
     addNewName() {
