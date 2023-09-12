@@ -40,7 +40,7 @@ function nameApp() {
       }
     },
 
-    showExclusionModal(nameEntry) {
+    showExclusionDialog(nameEntry) {
       this.currentNameEntry = nameEntry;
       this.currentExclusions = [...nameEntry.exclusions];
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter((name) => name !== nameEntry.name && Boolean(name));
@@ -53,7 +53,7 @@ function nameApp() {
       this.$refs.nameInput.focus();
     },
 
-    removeNameInput(nameEntry) {
+    removeName(nameEntry) {
       const index = this.nameEntries.indexOf(nameEntry);
 
       if (index > -1) {
