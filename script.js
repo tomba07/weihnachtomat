@@ -81,17 +81,27 @@ function nameApp() {
 
     assignGifts(names, exclusions) {
       const assignmentsDict = names.reduce((acc, curr) => {
-        acc[curr] = [];
-        return acc;
-      }, {});
+          acc[curr] = [];
+          return acc;
+        }, {}),
+        gifterCountByRecipient = names.reduce((acc, curr) => {
+          acc[curr] = 0;
+          return acc;
+        }, {});
 
       names.forEach((recipientName) => {
         //ignore exclusions and self
         let potentialGifters = names.filter((gifterName) => gifterName !== recipientName && (!exclusions[gifterName] || !exclusions[gifterName].includes(recipientName)));
-        const lowestAssignmentCount = Math.min(...potentialGifters.map((gifterName) => assignmentsDict[gifterName].length));
+        const lowestRecipientCount = Math.min(...potentialGifters.map((gifterName) => assignmentsDict[gifterName].length)),
+          lowestGifterCount = Math.min(...names.map((gifterName) => gifterCountByRecipient[gifterName]));
 
         //because of exclusions, sometimes people have to gift more than one person. It should however be evenly distributed.
-        potentialGifters = potentialGifters.filter((gifterName) => assignmentsDict[gifterName].length === lowestAssignmentCount);
+        potentialGifters = potentialGifters.filter((gifterName) => assignmentsDict[gifterName].length === lowestRecipientCount);
+        preventCycleGifters = potentialGifters.filter((gifterName) => gifterCountByRecipient[gifterName] === lowestGifterCount);
+
+        if (preventCycleGifters.length > 0) {
+          potentialGifters = preventCycleGifters;
+        }
 
         let gifter = potentialGifters[Math.floor(Math.random() * potentialGifters.length)];
 
@@ -105,6 +115,7 @@ function nameApp() {
           gifter = noGifter;
         }
         assignmentsDict[gifter].push(recipientName);
+        gifterCountByRecipient[recipientName]++;
       });
 
       return assignmentsDict;
