@@ -77,10 +77,8 @@ function nameApp() {
 
     createAssignments(names, exclusions) {
       let shuffledNames = this.shuffleNames([...names]);
-      let assignmentsDict = this.initializeAssignmentsDict(shuffledNames);
-      let recipients = this.assignGifts(shuffledNames, exclusions, assignmentsDict);
-      let leftOutPeople = this.getLeftOutPeople(shuffledNames, recipients);
-      this.assignLeftOutPeople(leftOutPeople, shuffledNames, exclusions, assignmentsDict);
+      let assignmentsDict = this.assignGifts(shuffledNames, exclusions);
+
       return this.formatAssignments(assignmentsDict);
     },
 
@@ -88,65 +86,39 @@ function nameApp() {
       return names.sort(() => Math.random() - 0.5);
     },
 
-    initializeAssignmentsDict(names) {
-      let dict = {};
-      names.forEach((name) => (dict[name] = []));
-      return dict;
-    },
+    assignGifts(names, exclusions) {
+      const assignmentsDict = names.reduce((acc, curr) => {
+        acc[curr] = [];
+        return acc;
+      }, {});
+      //track gifters assignment count
+      const recipientCountByGifter = names.reduce((acc, curr) => {
+        acc[curr] = 0;
+        return acc;
+      }, {});
 
-    assignGifts(names, exclusions, assignmentsDict) {
-      let unassignedRecipients = new Set(names);
+      names.forEach((recipientName) => {
+        //ignore exclusions, self and 'overachieving gifters'
+        let potentialGifters = names.filter((gifterName) => gifterName !== recipientName && (!exclusions[gifterName] || !exclusions[gifterName].includes(recipientName)));
+        const lowestPotentialGiftersAssignmentCount = Math.min(...potentialGifters.map((gifterName) => recipientCountByGifter[gifterName]));
+        //because of exclusions, sometimes people have to gift more than one person. It should however be evenly distributed.
+        potentialGifters = potentialGifters.filter((gifterName) => recipientCountByGifter[gifterName] === lowestPotentialGiftersAssignmentCount);
 
-      names.forEach((gifter) => {
-        let potentialRecipients = Array.from(unassignedRecipients).filter((name) => name !== gifter && (!exclusions[gifter] || !exclusions[gifter].includes(name)));
+        let gifter = potentialGifters[Math.floor(Math.random() * potentialGifters.length)];
 
-        if (potentialRecipients.length === 0) {
-          // Reset and try again
-          unassignedRecipients = new Set(names.filter((name) => name !== gifter));
-          potentialRecipients = Array.from(unassignedRecipients).filter((name) => name !== gifter && (!exclusions[gifter] || !exclusions[gifter].includes(name)));
+        if (!gifter) {
+          const noGifter = "No one";
+
+          assignmentsDict[noGifter] = [];
+          gifter = noGifter;
         }
-
-        let recipient = potentialRecipients[Math.floor(Math.random() * potentialRecipients.length)];
-        assignmentsDict[gifter].push(recipient);
-        unassignedRecipients.delete(recipient);
+        assignmentsDict[gifter].push(recipientName);
+        recipientCountByGifter[gifter] = recipientCountByGifter[gifter] ? recipientCountByGifter[gifter] + 1 : 1;
       });
 
-      return unassignedRecipients;
-    },
-    getLeftOutPeople(names, recipients) {
-      return names.filter((name) => !recipients.has(name));
+      return assignmentsDict;
     },
 
-    assignLeftOutPeople(leftOutPeople, names, exclusions, assignmentsDict) {
-      let potentialGifters = names.filter((name) => name !== "No one" && assignmentsDict[name].length === 0); // Only consider gifters who haven't been assigned yet
-      potentialGifters.sort(() => Math.random() - 0.5);
-
-      leftOutPeople.forEach((person) => {
-        let triedGifters = new Set();
-        let gifterIndex = Math.floor(Math.random() * potentialGifters.length);
-        let gifter = potentialGifters[gifterIndex];
-
-        while (gifter === person || (exclusions[gifter] && exclusions[gifter].includes(person)) || triedGifters.has(gifter)) {
-          triedGifters.add(gifter);
-
-          if (triedGifters.size >= potentialGifters.length) {
-            gifter = "No one";
-            break;
-          }
-
-          gifterIndex = (gifterIndex + 1) % potentialGifters.length;
-          gifter = potentialGifters[gifterIndex];
-        }
-
-        if (gifter !== "No one" && assignmentsDict[gifter]) {
-          assignmentsDict[gifter].push(person);
-          const gifterPosition = potentialGifters.indexOf(gifter);
-          if (gifterPosition > -1) {
-            potentialGifters.splice(gifterPosition, 1); // Remove the gifter from the potential gifter list
-          }
-        }
-      });
-    },
     formatAssignments(assignmentsDict) {
       let assignmentsList = [];
       for (let gifter in assignmentsDict) {
