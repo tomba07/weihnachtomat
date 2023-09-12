@@ -31,7 +31,7 @@
           </div>
           <span>
             <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-              <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs font-bold leading-none" data-dismissible="chip">
+              <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs font-bold leading-none" data-dismissible="chip">
                 <div class="mr-5 mt-px" x-text="exclusion"></div>
                 <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
                   <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
