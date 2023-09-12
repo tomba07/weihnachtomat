@@ -8,6 +8,16 @@ function nameApp() {
     output: "",
     newName: "",
 
+    init() {
+      document.addEventListener("keydown", this.closeOnEscape.bind(this));
+    },
+
+    closeOnEscape(event) {
+      if (event.key === "Escape" || event.keyCode === 27) {
+        this.exclusionModalVisible = false;
+      }
+    },
+
     updateExclusionOptions() {
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
     },

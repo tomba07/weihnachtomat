@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
 
-  <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()">
+  <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()" x-init="init()"> 
     <div class="container mx-auto mt-10 p-4 bg-white rounded shadow-lg max-w-lg">
       <!-- List of entered names -->
       <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
