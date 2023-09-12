@@ -49,7 +49,7 @@
       <!-- Input for a new name -->
       <div class="flex items-center mb-4">
         <form @submit.prevent="addNewName()">
-          <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" />
+          <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
           <button type="submit" class="bg-green-500 text-white p-2 rounded">Add</button>
         </form>
       </div>
