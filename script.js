@@ -10,6 +10,7 @@ function nameApp() {
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
+      this.$refs.nameInput.focus();
     },
 
     closeOnEscape(event) {
