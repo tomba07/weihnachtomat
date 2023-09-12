@@ -7,15 +7,23 @@ function nameApp() {
     currentNameEntry: null,
     output: "",
     newName: "",
+    decodedAssignments: null,
+    selectedName: null,
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
       this.$refs.nameInput.focus();
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedAssignments = urlParams.get("assignments");
+      if (encodedAssignments) {
+        this.decodedAssignments = JSON.parse(atob(encodedAssignments));
+      }
     },
 
     closeOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.exclusionModalVisible = false;
+        this.$refs.nameInput.focus();
       }
     },
 
@@ -42,6 +50,7 @@ function nameApp() {
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
       this.exclusionModalVisible = false;
+      this.$refs.nameInput.focus();
     },
 
     removeNameInput(nameEntry) {
@@ -67,16 +76,26 @@ function nameApp() {
           acc[entry.name] = entry.exclusions;
           return acc;
         }, {}),
-        assignments = this.createAssignments(names, exclusions);
+        assignmentsDict = this.createAssignments(names, exclusions);
 
-      this.output = assignments.join("<br>");
+      // Encode the assignments to Base64
+      const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
+      navigator.clipboard
+        .writeText(window.location.href.split("?")[0] + "?assignments=" + encodedAssignments)
+        .then(() => {
+          alert("Resolution link copied to clipboard!");
+          this.$refs.nameInput.focus();
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err);
+        });
     },
 
     createAssignments(names, exclusions) {
       const shuffledNames = names.sort(() => Math.random() - 0.5);
       const assignmentsDict = this.assignGifts(shuffledNames, exclusions);
 
-      return this.formatAssignments(assignmentsDict);
+      return assignmentsDict;
     },
 
     assignGifts(names, exclusions) {
@@ -127,6 +146,17 @@ function nameApp() {
         assignmentsList.push(gifter + " -> " + assignmentsDict[gifter].join(", "));
       }
       return assignmentsList;
+    },
+
+    copyResolutionLink() {
+      navigator.clipboard
+        .writeText(this.encodedLink)
+        .then(() => {
+          alert("Resolution link copied to clipboard!");
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err);
+        });
     }
   };
 }

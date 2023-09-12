@@ -7,7 +7,7 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
   <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()" x-init="init()">
-    <div class="container mx-auto mt-4 max-w-lg px-4">
+    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
         <!-- List of entered names -->
         <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
@@ -52,10 +52,7 @@
         </form>
       </div>
       <div class="mt-4">
-        <button @click="assign()" class="bg-blue-500 text-white p-2 rounded">Assign</button>
-      </div>
-      <div class="container mx-auto mt-4 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
-        <p id="output" x-html="output"></p>
+        <button @click="assign()" :disabled="nameEntries.length < 2" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">Assign</button>
       </div>
       <!-- Exclusion Modal -->
       <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
@@ -73,6 +70,18 @@
           <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
         </div>
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
+      </div>
+    </div>
+    <!-- Resolution Panel -->
+    <div x-show="decodedAssignments" class="mx-auto mt-4 max-w-lg px-4 p-4 bg-white rounded shadow-lg">
+      <template x-if="decodedAssignments" x-for="name in Object.keys(decodedAssignments)">
+        <div class="flex items-center mb-2">
+          <span class="mr-2 flex-grow" x-text="name"></span>
+          <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
+        </div>
+      </template>
+      <div x-show="decodedAssignments && selectedName" class="mt-2">
+        <p x-text="selectedName + ' -> ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
       </div>
     </div>
   </body>
