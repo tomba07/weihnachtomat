@@ -43,25 +43,9 @@ function nameApp() {
       this.exclusionModalVisible = true;
     },
 
-    markAsDone(nameEntry) {
-      let names = this.nameEntries.map((entry) => entry.name);
-      let nameOccurrences = names.filter((name) => name === nameEntry.name).length;
-
-      if (nameOccurrences > 1) {
-        alert("This name already exists. Please enter a unique name.");
-        return;
-      }
-
-      this.addNameInput();
-    },
-
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
       this.exclusionModalVisible = false;
-    },
-
-    addNameInput() {
-      this.nameEntries.push({ id: Date.now(), name: "", exclusions: [], done: false });
     },
 
     removeNameInput(nameEntry) {
