@@ -23,12 +23,8 @@ function nameApp() {
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
     },
 
-    toggleAllExclusions() {
-      if (this.currentExclusions.length === this.availableExclusions.length) {
-        this.currentExclusions = [];
-      } else {
-        this.currentExclusions = [...this.availableExclusions];
-      }
+    selectAllExclusions() {
+      this.currentExclusions = [...this.availableExclusions];
     },
 
     addNewName() {

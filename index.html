@@ -62,11 +62,6 @@
         <div class="bg-white p-8 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
           <h3 class="text-xl mb-4">Select Exclusions</h3>
           <div class="mb-4">
-            <!-- Select All Checkbox -->
-            <div class="flex items-center mb-2">
-                <input type="checkbox" x-bind:checked="currentExclusions.length === availableExclusions.length" @click="toggleAllExclusions()" class="mr-2" />
-              <label>Select All</label>
-            </div>
             <template x-for="name in availableExclusions">
               <div class="flex items-center mb-2">
                 <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
@@ -74,6 +69,7 @@
               </div>
             </template>
           </div>
+          <button @click="selectAllExclusions()" class="bg-blue-500 text-white p-2 rounded mb-2">Select All</button>
           <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
         </div>
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
