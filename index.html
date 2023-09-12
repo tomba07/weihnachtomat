@@ -8,57 +8,57 @@
   </head>
   <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()" x-init="init()">
     <div class="container mx-auto mt-4 max-w-lg px-4">
-        <div class="p-4 bg-white rounded shadow-lg">
-      <!-- List of entered names -->
-      <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
-        <div class="flex flex-col mb-4 border-b border-gray-100">
-          <div class="flex items-center mb-2">
-            <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-            <button @click="showExclusionModal(nameEntry)" class="bg-transparent border border-blue-500 text-blue-500 p-2 rounded mr-2">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-              </svg>
-            </button>
-            <button @click="removeNameInput(nameEntry)" class="bg-transparent border border-red-500 text-red-500 p-2 rounded">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                />
-              </svg>
-            </button>
-          </div>
-          <span>
-            <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-              <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs font-bold leading-none" data-dismissible="chip">
-                <div class="mr-5 mt-px" x-text="exclusion"></div>
-                <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
-                  <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
+      <div class="p-4 bg-white rounded shadow-lg">
+        <!-- List of entered names -->
+        <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
+          <div class="flex flex-col mb-4 border-b border-gray-100">
+            <div class="flex items-center mb-2">
+              <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
+              <button @click="showExclusionModal(nameEntry)" class="bg-transparent border border-blue-500 text-blue-500 p-2 rounded mr-2">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+              </button>
+              <button @click="removeNameInput(nameEntry)" class="bg-transparent border border-red-500 text-red-500 p-2 rounded">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
+                  <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                  />
+                </svg>
+              </button>
+            </div>
+            <span>
+              <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
+                <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs font-bold leading-none" data-dismissible="chip">
+                  <div class="mr-5 mt-px" x-text="exclusion"></div>
+                  <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
+                    <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                      </svg>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </template>
-          </span>
-        </div>
-      </template>
-      <!-- Input for a new name -->
-      <form @submit.prevent="addNewName()" class="flex mb-4">
-        <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
-        <button type="submit" class="bg-green-500 text-white p-2 rounded">Add</button>
-      </form>
-    </div>
-    <div class="mt-4">
+              </template>
+            </span>
+          </div>
+        </template>
+        <!-- Input for a new name -->
+        <form @submit.prevent="addNewName()" class="flex mb-4">
+          <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
+          <button type="submit" class="bg-green-500 text-white p-2 rounded">Add</button>
+        </form>
+      </div>
+      <div class="mt-4">
         <button @click="assign()" class="bg-blue-500 text-white p-2 rounded">Assign</button>
-    </div>
-    <div class="container mx-auto mt-4 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
-      <p id="output" x-html="output"></p>
-    </div>
-    <!-- Exclusion Modal -->
-    <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
+      </div>
+      <div class="container mx-auto mt-4 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
+        <p id="output" x-html="output"></p>
+      </div>
+      <!-- Exclusion Modal -->
+      <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
         <div class="bg-white p-8 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
           <h3 class="text-xl mb-4">Select Exclusions</h3>
           <div class="mb-4">
@@ -74,5 +74,6 @@
         </div>
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
       </div>
+    </div>
   </body>
 </html>
