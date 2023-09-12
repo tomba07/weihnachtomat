@@ -6,13 +6,13 @@
     <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
-  <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()" x-init="init()">
-    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg px-4">
+  <body class="bg-gray-100 font-sans" x-data="nameApp()" x-init="init()">
+    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg">
       <div class="p-4 bg-white rounded shadow-lg">
         <!-- List of entered names -->
-        <template x-for="nameEntry in nameEntries" :key="nameEntry.id">
-          <div class="flex flex-col mb-4 border-b border-gray-100">
-            <div class="flex items-center mb-2">
+        <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
+          <div class="flex flex-col p-2 border-b border-gray-50">
+            <div class="flex items-center">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
               <button @click="showExclusionModal(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
@@ -48,7 +48,7 @@
         <!-- Input for a new name -->
         <form @submit.prevent="addNewName()" class="flex mb-4">
           <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
-          <button type="submit" class="bg-blue-500 text-white p-2 rounded">Add</button>
+          <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0" :class="{'opacity-50 cursor-not-allowed': newName.length <= 0}">Add</button>
         </form>
       </div>
       <div class="mt-4">
