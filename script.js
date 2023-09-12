@@ -19,10 +19,6 @@ function nameApp() {
       }
     },
 
-    updateExclusionOptions() {
-      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
-    },
-
     selectAllExclusions() {
       this.currentExclusions = [...this.availableExclusions];
     },
@@ -50,39 +46,37 @@ function nameApp() {
 
     removeNameInput(nameEntry) {
       const index = this.nameEntries.indexOf(nameEntry);
+
       if (index > -1) {
         this.nameEntries.splice(index, 1);
       }
-      this.updateExclusionOptions();
+      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
     },
 
     removeExclusion(nameEntry, exclusion) {
       const index = nameEntry.exclusions.indexOf(exclusion);
+
       if (index > -1) {
         nameEntry.exclusions.splice(index, 1);
       }
     },
 
     assign() {
-      let names = this.nameEntries.map((entry) => entry.name);
-      let exclusions = {};
-      this.nameEntries.forEach((entry) => {
-        exclusions[entry.name] = entry.exclusions;
-      });
+      const names = this.nameEntries.map((entry) => entry.name),
+        exclusions = this.nameEntries.reduce((acc, entry) => {
+          acc[entry.name] = entry.exclusions;
+          return acc;
+        }, {}),
+        assignments = this.createAssignments(names, exclusions);
 
-      let assignments = this.createAssignments(names, exclusions);
       this.output = assignments.join("<br>");
     },
 
     createAssignments(names, exclusions) {
-      let shuffledNames = this.shuffleNames([...names]);
-      let assignmentsDict = this.assignGifts(shuffledNames, exclusions);
+      const shuffledNames = names.sort(() => Math.random() - 0.5);
+      const assignmentsDict = this.assignGifts(shuffledNames, exclusions);
 
       return this.formatAssignments(assignmentsDict);
-    },
-
-    shuffleNames(names) {
-      return names.sort(() => Math.random() - 0.5);
     },
 
     assignGifts(names, exclusions) {
@@ -90,18 +84,14 @@ function nameApp() {
         acc[curr] = [];
         return acc;
       }, {});
-      //track gifters assignment count
-      const recipientCountByGifter = names.reduce((acc, curr) => {
-        acc[curr] = 0;
-        return acc;
-      }, {});
 
       names.forEach((recipientName) => {
-        //ignore exclusions, self and 'overachieving gifters'
+        //ignore exclusions and self
         let potentialGifters = names.filter((gifterName) => gifterName !== recipientName && (!exclusions[gifterName] || !exclusions[gifterName].includes(recipientName)));
-        const lowestPotentialGiftersAssignmentCount = Math.min(...potentialGifters.map((gifterName) => recipientCountByGifter[gifterName]));
+        const lowestAssignmentCount = Math.min(...potentialGifters.map((gifterName) => assignmentsDict[gifterName].length));
+
         //because of exclusions, sometimes people have to gift more than one person. It should however be evenly distributed.
-        potentialGifters = potentialGifters.filter((gifterName) => recipientCountByGifter[gifterName] === lowestPotentialGiftersAssignmentCount);
+        potentialGifters = potentialGifters.filter((gifterName) => assignmentsDict[gifterName].length === lowestAssignmentCount);
 
         let gifter = potentialGifters[Math.floor(Math.random() * potentialGifters.length)];
 
@@ -115,7 +105,6 @@ function nameApp() {
           gifter = noGifter;
         }
         assignmentsDict[gifter].push(recipientName);
-        recipientCountByGifter[gifter] = recipientCountByGifter[gifter] ? recipientCountByGifter[gifter] + 1 : 1;
       });
 
       return assignmentsDict;
