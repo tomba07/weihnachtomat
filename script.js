@@ -7,7 +7,6 @@ function nameApp() {
     currentNameEntry: null,
     output: "",
     newName: "",
-    selectAllExclusions: false,
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
@@ -25,11 +24,10 @@ function nameApp() {
     },
 
     toggleAllExclusions() {
-      this.selectAllExclusions = !this.selectAllExclusions;
-      if (this.selectAllExclusions) {
-        this.currentExclusions = [...this.availableExclusions];
-      } else {
+      if (this.currentExclusions.length === this.availableExclusions.length) {
         this.currentExclusions = [];
+      } else {
+        this.currentExclusions = [...this.availableExclusions];
       }
     },
 
@@ -130,7 +128,10 @@ function nameApp() {
         if (!gifter) {
           const noGifter = "No one";
 
-          assignmentsDict[noGifter] = [];
+          if (!assignmentsDict[noGifter]) {
+            assignmentsDict[noGifter] = [];
+          }
+
           gifter = noGifter;
         }
         assignmentsDict[gifter].push(recipientName);

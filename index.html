@@ -6,7 +6,6 @@
     <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
-
   <body class="bg-gray-100 h-screen font-sans" x-data="nameApp()" x-init="init()">
     <div class="container mx-auto mt-4 max-w-lg px-4">
         <div class="p-4 bg-white rounded shadow-lg">
@@ -46,47 +45,38 @@
           </span>
         </div>
       </template>
-
       <!-- Input for a new name -->
       <form @submit.prevent="addNewName()" class="flex mb-4">
         <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
         <button type="submit" class="bg-green-500 text-white p-2 rounded">Add</button>
       </form>
-
-
-      
     </div>
-
     <div class="mt-4">
         <button @click="assign()" class="bg-blue-500 text-white p-2 rounded">Assign</button>
     </div>
-
-    <!-- Exclusion Modal -->
-    <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
-      <div class="bg-white p-8 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
-        <h3 class="text-xl mb-4">Select Exclusions</h3>
-        <div class="mb-4">
-          <!-- Select All Checkbox -->
-          <div class="flex items-center mb-2">
-            <input type="checkbox" :checked="selectAllExclusions" @click="toggleAllExclusions()" class="mr-2" />
-            <label>Select All</label>
-          </div>
-          <template x-for="name in availableExclusions">
-            <div class="flex items-center mb-2">
-              <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
-              <label x-text="name"></label>
-            </div>
-          </template>
-        </div>
-        <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
-      </div>
-      <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
-
-    </div>
-
-
-    <div class="container mx-auto mt-10 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
+    <div class="container mx-auto mt-4 p-4 bg-white rounded shadow-lg max-w-lg" x-show="output">
       <p id="output" x-html="output"></p>
     </div>
+    <!-- Exclusion Modal -->
+    <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
+        <div class="bg-white p-8 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
+          <h3 class="text-xl mb-4">Select Exclusions</h3>
+          <div class="mb-4">
+            <!-- Select All Checkbox -->
+            <div class="flex items-center mb-2">
+                <input type="checkbox" x-bind:checked="currentExclusions.length === availableExclusions.length" @click="toggleAllExclusions()" class="mr-2" />
+              <label>Select All</label>
+            </div>
+            <template x-for="name in availableExclusions">
+              <div class="flex items-center mb-2">
+                <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
+                <label x-text="name"></label>
+              </div>
+            </template>
+          </div>
+          <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
+        </div>
+        <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
+      </div>
   </body>
 </html>
