@@ -1,7 +1,7 @@
 function nameApp() {
   return {
     nameEntries: [],
-    exclusionModalVisible: false,
+    exclusionDialogVisible: false,
     availableExclusions: [],
     currentExclusions: [],
     currentNameEntry: null,
@@ -22,7 +22,7 @@ function nameApp() {
 
     closeOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
-        this.exclusionModalVisible = false;
+        this.exclusionDialogVisible = false;
         this.$refs.nameInput.focus();
       }
     },
@@ -44,12 +44,12 @@ function nameApp() {
       this.currentNameEntry = nameEntry;
       this.currentExclusions = [...nameEntry.exclusions];
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter((name) => name !== nameEntry.name && Boolean(name));
-      this.exclusionModalVisible = true;
+      this.exclusionDialogVisible = true;
     },
 
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
-      this.exclusionModalVisible = false;
+      this.exclusionDialogVisible = false;
       this.$refs.nameInput.focus();
     },
 

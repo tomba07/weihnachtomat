@@ -14,12 +14,12 @@
           <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
             <div class="flex items-center">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-              <button @click="showExclusionDialog(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-200" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
+              <button @click="showExclusionDialog(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-100" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </button>
-              <button @click="removeName(nameEntry)" :disabled="nameEntries.length < 2" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-200">
+              <button @click="removeName(nameEntry)" :disabled="nameEntries.length < 2" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-100">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path
                     stroke-linecap="round"
@@ -31,7 +31,7 @@
             </div>
             <div class="flex flex-wrap gap-1">
               <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-                <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline text-xs leading-none" data-dismissible="chip">
+                <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-100 py-2 px-3.5 align-baseline text-xs leading-none" data-dismissible="chip">
                   <div class="mr-5 mt-px" x-text="exclusion"></div>
                   <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
                     <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
@@ -54,10 +54,13 @@
       <div class="mt-2">
         <button @click="assign()" :disabled="nameEntries.length < 2" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">Assign</button>
       </div>
-      <!-- Exclusion Modal -->
-      <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
-        <div class="bg-white p-4 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
-          <h3 class="text-xl mb-8">Select Exclusions</h3>
+      <!-- Exclusion Dialog -->
+      <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false">
+        <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
+          <div class="flex items-center mb-8 ">
+            <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
+            <button @click="selectAllExclusions()" class="bg-transparent rounded p-2 hover:bg-gray-100">Select All</button>
+          </div>
           <div class="mb-8">
             <template x-for="name in availableExclusions">
               <div class="flex items-center mb-2">
@@ -66,8 +69,10 @@
               </div>
             </template>
           </div>
-          <button @click="selectAllExclusions()" class="bg-blue-500 text-white p-2 rounded mb-2">Select All</button>
-          <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Save</button>
+          <div class="flex justify-end space-x-4">
+            <button @click="exclusionDialogVisible = false" class="bg-transparent hover:bg-gray-100 p-2 rounded">Close</button>
+            <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Done</button>
+          </div>
         </div>
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
       </div>
@@ -81,7 +86,7 @@
         </div>
       </template>
       <div x-show="decodedAssignments && selectedName" class="mt-2">
-        <p class="font-bold"x-text="selectedName + ' gives gift to: ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
+        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
       </div>
     </div>
   </body>
