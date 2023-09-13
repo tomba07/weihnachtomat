@@ -33,7 +33,7 @@ function nameApp() {
 
     addNewName() {
       if (this.newName && this.newName.length > 0 && !this.nameEntries.some((entry) => entry.name === this.newName)) {
-        this.nameEntries.push({ name: this.newName, exclusions: [] });
+        this.nameEntries.push({ name: this.newName.trim(), exclusions: [] });
         this.newName = "";
       } else {
         alert("Please enter a unique name.");
