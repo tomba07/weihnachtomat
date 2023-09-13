@@ -14,12 +14,12 @@
           <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
             <div class="flex items-center">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-              <button @click="showExclusionDialog(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-100" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
+              <button @click="showExclusionDialog(nameEntry)" :disabled="nameEntries.length < 2" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-100" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </button>
-              <button @click="removeName(nameEntry)" :disabled="nameEntries.length < 2" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-100">
+              <button @click="removeName(nameEntry)" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-100">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path
                     stroke-linecap="round"

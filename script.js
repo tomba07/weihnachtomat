@@ -76,7 +76,8 @@ function nameApp() {
           acc[entry.name] = entry.exclusions;
           return acc;
         }, {}),
-        assignmentsDict = this.createAssignments(names, exclusions);
+        assignmentsDict = this.assignmentGPT(names, exclusions);
+      console.log(assignmentsDict);
 
       // Encode the assignments to Base64
       const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
@@ -91,61 +92,60 @@ function nameApp() {
         });
     },
 
-    createAssignments(names, exclusions) {
-      const shuffledNames = names.sort(() => Math.random() - 0.5);
-      const assignmentsDict = this.assignGifts(shuffledNames, exclusions);
+    assignmentGPT(participantsArray, constraints) {
+      let visited = new Set();
 
-      return assignmentsDict;
-    },
-
-    assignGifts(names, exclusions) {
-      const assignmentsDict = names.reduce((acc, curr) => {
-          acc[curr] = [];
-          return acc;
-        }, {}),
-        gifterCountByRecipient = names.reduce((acc, curr) => {
-          acc[curr] = 0;
-          return acc;
-        }, {});
-
-      names.forEach((recipientName) => {
-        //ignore exclusions and self
-        let potentialGifters = names.filter((gifterName) => gifterName !== recipientName && (!exclusions[gifterName] || !exclusions[gifterName].includes(recipientName)));
-        const lowestRecipientCount = Math.min(...potentialGifters.map((gifterName) => assignmentsDict[gifterName].length)),
-          lowestGifterCount = Math.min(...names.map((gifterName) => gifterCountByRecipient[gifterName]));
-
-        //because of exclusions, sometimes people have to gift more than one person. It should however be evenly distributed.
-        potentialGifters = potentialGifters.filter((gifterName) => assignmentsDict[gifterName].length === lowestRecipientCount);
-        preventCycleGifters = potentialGifters.filter((gifterName) => gifterCountByRecipient[gifterName] === lowestGifterCount);
-
-        if (preventCycleGifters.length > 0) {
-          potentialGifters = preventCycleGifters;
-        }
-
-        let gifter = potentialGifters[Math.floor(Math.random() * potentialGifters.length)];
-
-        if (!gifter) {
-          const noGifter = "No one";
-
-          if (!assignmentsDict[noGifter]) {
-            assignmentsDict[noGifter] = [];
-          }
-
-          gifter = noGifter;
-        }
-        assignmentsDict[gifter].push(recipientName);
-        gifterCountByRecipient[recipientName]++;
-      });
-
-      return assignmentsDict;
-    },
-
-    formatAssignments(assignmentsDict) {
-      let assignmentsList = [];
-      for (let gifter in assignmentsDict) {
-        assignmentsList.push(gifter + " -> " + assignmentsDict[gifter].join(", "));
+      // Convert the simple array to the old structure
+      let participants = {};
+      for (let name of participantsArray) {
+        participants[name] = participantsArray.filter(p => p !== name);
       }
-      return assignmentsList;
+
+      function isValid(current, nextParticipant) {
+        if (visited.has(nextParticipant)) {
+          return false;
+        }
+        if (constraints[current] && constraints[current].includes(nextParticipant)) {
+          return false;
+        }
+        return true;
+      }
+
+      function findCycle(current, start, path) {
+        if (path.length === Object.keys(participants).length) {
+          if (participants[current].includes(start)) {
+            path.push(start);
+            return path;
+          }
+          return null;
+        }
+
+        for (let nextParticipant of participants[current]) {
+          if (isValid(current, nextParticipant)) {
+            visited.add(nextParticipant);
+            let newPath = findCycle(nextParticipant, start, [...path, nextParticipant]);
+            if (newPath) {
+              return newPath;
+            }
+            visited.delete(nextParticipant);
+          }
+        }
+        return null;
+      }
+
+      let keys = Object.keys(participants);
+      let start = keys[Math.floor(Math.random() * keys.length)];
+      visited.add(start);
+      let cycle = findCycle(start, start, [start]);
+      if (cycle) {
+        let assignments = {};
+        for (let i = 0; i < cycle.length - 1; i++) {
+          assignments[cycle[i]] = cycle[i + 1];
+        }
+        return assignments;
+      } else {
+        return null;
+      }
     },
 
     copyResolutionLink() {
