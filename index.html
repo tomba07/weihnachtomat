@@ -7,19 +7,19 @@
     <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
   </head>
   <body class="bg-gray-100 font-sans" x-data="nameApp()" x-init="init()">
-    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg">
+    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
         <!-- List of entered names -->
         <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
-          <div class="flex flex-col p-2 border-b border-gray-50">
+          <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
             <div class="flex items-center">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-              <button @click="showExclusionDialog(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-200">
+              <button @click="showExclusionDialog(nameEntry)" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-200" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
                 </svg>
               </button>
-              <button @click="removeName(nameEntry)" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-200">
+              <button @click="removeName(nameEntry)" :disabled="nameEntries.length < 2" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-200">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
                   <path
                     stroke-linecap="round"
@@ -29,9 +29,9 @@
                 </svg>
               </button>
             </div>
-            <span>
+            <div class="flex flex-wrap gap-1">
               <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-                <div class="mb-2 center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline font-sans text-xs leading-none" data-dismissible="chip">
+                <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-200 py-2 px-3.5 align-baseline text-xs leading-none" data-dismissible="chip">
                   <div class="mr-5 mt-px" x-text="exclusion"></div>
                   <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
                     <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
@@ -42,23 +42,23 @@
                   </div>
                 </div>
               </template>
-            </span>
+            </div>
           </div>
         </template>
         <!-- Input for a new name -->
-        <form @submit.prevent="addNewName()" class="flex mb-4">
+        <form @submit.prevent="addNewName()" class="flex">
           <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
           <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0" :class="{'opacity-50 cursor-not-allowed': newName.length <= 0}">Add</button>
         </form>
       </div>
-      <div class="mt-4">
+      <div class="mt-2">
         <button @click="assign()" :disabled="nameEntries.length < 2" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">Assign</button>
       </div>
       <!-- Exclusion Modal -->
       <div x-show="exclusionModalVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionModalVisible = false">
-        <div class="bg-white p-8 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
-          <h3 class="text-xl mb-4">Select Exclusions</h3>
-          <div class="mb-4">
+        <div class="bg-white p-4 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
+          <h3 class="text-xl mb-8">Select Exclusions</h3>
+          <div class="mb-8">
             <template x-for="name in availableExclusions">
               <div class="flex items-center mb-2">
                 <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
@@ -81,7 +81,7 @@
         </div>
       </template>
       <div x-show="decodedAssignments && selectedName" class="mt-2">
-        <p x-text="selectedName + ' -> ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
+        <p class="font-bold"x-text="selectedName + ' gives gift to: ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
       </div>
     </div>
   </body>
