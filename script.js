@@ -21,7 +21,7 @@ function nameApp() {
     },
 
     isObjectEmpty(objectName) {
-      return Object.keys(objectName).length === 0
+      return Object.keys(objectName).length === 0;
     },
 
     closeOnEscape(event) {
@@ -102,7 +102,7 @@ function nameApp() {
       // Convert the simple array to the old structure
       let participants = {};
       for (let name of participantsArray) {
-        participants[name] = participantsArray.filter(p => p !== name);
+        participants[name] = participantsArray.filter((p) => p !== name);
       }
 
       function isValid(current, nextParticipant) {
@@ -161,6 +161,12 @@ function nameApp() {
         .catch((err) => {
           console.error("Could not copy text: ", err);
         });
+    },
+
+    removeAssignmentsFromURL() {
+      const url = new URL(window.location);
+      url.searchParams.delete("assignments");
+      window.location.href = url;
     }
   };
 }

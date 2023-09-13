@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <script src="script.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
@@ -58,7 +58,7 @@
       <!-- Exclusion Dialog -->
       <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false; $refs.nameInput.focus()">
         <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
-          <div class="flex items-center mb-8 ">
+          <div class="flex items-center mb-8">
             <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
             <button @click="selectAllExclusions()" class="bg-transparent rounded p-2 hover:bg-gray-100">Select All</button>
           </div>
@@ -79,16 +79,19 @@
       </div>
     </div>
     <!-- Resolution Panel -->
-    <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4 p-4 bg-white rounded shadow-lg">
-      <template x-for="name in Object.keys(decodedAssignments)">
-        <div class="flex items-center mb-2">
-          <span class="mr-2 flex-grow" x-text="name"></span>
-          <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
+    <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
+      <div class="p-4 bg-white rounded shadow-lg">
+        <template x-for="name in Object.keys(decodedAssignments)">
+          <div class="flex items-center mb-2">
+            <span class="mr-2 flex-grow" x-text="name"></span>
+            <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
+          </div>
+        </template>
+        <div x-show="selectedName" class="mt-2">
+          <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
         </div>
-      </template>
-      <div x-show="selectedName" class="mt-2">
-        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
       </div>
+      <button @click="removeAssignmentsFromURL()" class="bg-blue-500 text-white p-2 rounded mt-4">New Assignment</button>
     </div>
   </body>
 </html>
