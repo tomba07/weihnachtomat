@@ -9,6 +9,7 @@ function nameApp() {
     newName: "",
     decodedAssignments: {},
     selectedName: null,
+    linkCopied: false,
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
@@ -85,11 +86,14 @@ function nameApp() {
 
       // Encode the assignments to Base64
       const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
+      this.output = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
+    },
+
+    copyToClipboard() {
       navigator.clipboard
-        .writeText(window.location.href.split("?")[0] + "?assignments=" + encodedAssignments)
+        .writeText(this.output)
         .then(() => {
-          alert("Resolution link copied to clipboard!");
-          this.$refs.nameInput.focus();
+          this.linkCopied = true;
         })
         .catch((err) => {
           console.error("Could not copy text: ", err);
@@ -150,17 +154,6 @@ function nameApp() {
       } else {
         return null;
       }
-    },
-
-    copyResolutionLink() {
-      navigator.clipboard
-        .writeText(this.encodedLink)
-        .then(() => {
-          alert("Resolution link copied to clipboard!");
-        })
-        .catch((err) => {
-          console.error("Could not copy text: ", err);
-        });
     },
 
     removeAssignmentsFromURL() {

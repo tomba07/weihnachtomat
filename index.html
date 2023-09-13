@@ -79,6 +79,16 @@
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
       </div>
     </div>
+    <!-- Link Panel -->
+    <div x-show="output" class="mx-auto mt-4 max-w-lg px-4">
+      <div class="p-4 bg-white rounded shadow-lg">
+        <div class="flex items-center">
+          <span class="mr-2 flex-grow truncate" x-text="output"></span>
+          <button @click="copyToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
+        </div>
+        <p x-show="linkCopied" class="text-gray-500">link copied to clipboard!</p>
+      </div>
+    </div>
     <!-- Resolution Panel -->
     <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
