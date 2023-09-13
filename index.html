@@ -55,7 +55,7 @@
         <button @click="assign()" :disabled="nameEntries.length < 2" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">Assign</button>
       </div>
       <!-- Exclusion Dialog -->
-      <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false">
+      <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false; $refs.nameInput.focus()">
         <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
           <div class="flex items-center mb-8 ">
             <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
@@ -70,7 +70,7 @@
             </template>
           </div>
           <div class="flex justify-end space-x-4">
-            <button @click="exclusionDialogVisible = false" class="bg-transparent hover:bg-gray-100 p-2 rounded">Close</button>
+            <button @click="exclusionDialogVisible = false; $refs.nameInput.focus()" class="bg-transparent hover:bg-gray-100 p-2 rounded">Close</button>
             <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Done</button>
           </div>
         </div>
