@@ -7,7 +7,7 @@ function nameApp() {
     currentNameEntry: null,
     output: "",
     newName: "",
-    decodedAssignments: null,
+    decodedAssignments: {},
     selectedName: null,
 
     init() {
@@ -18,6 +18,10 @@ function nameApp() {
       if (encodedAssignments) {
         this.decodedAssignments = JSON.parse(atob(encodedAssignments));
       }
+    },
+
+    isObjectEmpty(objectName) {
+      return Object.keys(objectName).length === 0
     },
 
     closeOnEscape(event) {

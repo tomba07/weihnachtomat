@@ -4,10 +4,10 @@
     <script src="script.js" defer></script>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
     <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
-    <script src="https://cdn.jsdelivr.net/gh/alpinejs/alpine@v2.x.x/dist/alpine.min.js" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   </head>
   <body class="bg-gray-100 font-sans" x-data="nameApp()" x-init="init()">
-    <div x-show="!decodedAssignments" class="mx-auto mt-4 max-w-lg px-4">
+    <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
         <!-- List of entered names -->
         <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
@@ -78,15 +78,15 @@
       </div>
     </div>
     <!-- Resolution Panel -->
-    <div x-show="decodedAssignments" class="mx-auto mt-4 max-w-lg px-4 p-4 bg-white rounded shadow-lg">
-      <template x-if="decodedAssignments" x-for="name in Object.keys(decodedAssignments)">
+    <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4 p-4 bg-white rounded shadow-lg">
+      <template x-for="name in Object.keys(decodedAssignments)">
         <div class="flex items-center mb-2">
           <span class="mr-2 flex-grow" x-text="name"></span>
           <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
         </div>
       </template>
-      <div x-show="decodedAssignments && selectedName" class="mt-2">
-        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + (decodedAssignments && decodedAssignments[selectedName] ? decodedAssignments[selectedName].join(', ') : '')"></p>
+      <div x-show="selectedName" class="mt-2">
+        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
       </div>
     </div>
   </body>
