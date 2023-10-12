@@ -53,10 +53,33 @@ function nameApp() {
     },
 
     saveExclusions() {
+      const previousExclusions = [...this.currentNameEntry.exclusions];
       this.currentNameEntry.exclusions = [...this.currentExclusions];
+    
+      // Ensure new exclusions are symmetrical
+      for (let exclusion of this.currentExclusions) {
+        const excludedEntry = this.nameEntries.find(entry => entry.name === exclusion);
+        if (excludedEntry && !excludedEntry.exclusions.includes(this.currentNameEntry.name)) {
+          excludedEntry.exclusions.push(this.currentNameEntry.name);
+        }
+      }
+    
+      // Ensure removed exclusions are also removed symmetrically
+      for (let previousExclusion of previousExclusions) {
+        if (!this.currentExclusions.includes(previousExclusion)) {
+          const previouslyExcludedEntry = this.nameEntries.find(entry => entry.name === previousExclusion);
+          if (previouslyExcludedEntry) {
+            const index = previouslyExcludedEntry.exclusions.indexOf(this.currentNameEntry.name);
+            if (index > -1) {
+              previouslyExcludedEntry.exclusions.splice(index, 1);
+            }
+          }
+        }
+      }
+    
       this.exclusionDialogVisible = false;
       this.$refs.nameInput.focus();
-    },
+    },    
 
     removeName(nameEntry) {
       const index = this.nameEntries.indexOf(nameEntry);
@@ -72,6 +95,15 @@ function nameApp() {
 
       if (index > -1) {
         nameEntry.exclusions.splice(index, 1);
+      }
+
+      // Ensure symmetrical exclusions are removed
+      const excludedEntry = this.nameEntries.find(entry => entry.name === exclusion);
+      if (excludedEntry) {
+        const reverseExclusionIndex = excludedEntry.exclusions.indexOf(nameEntry.name);
+        if (reverseExclusionIndex > -1) {
+          excludedEntry.exclusions.splice(reverseExclusionIndex, 1);
+        }
       }
     },
 
