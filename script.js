@@ -84,6 +84,10 @@ function nameApp() {
         assignmentsDict = this.assignmentGPT(names, exclusions);
       console.log(assignmentsDict);
 
+      if (!assignmentsDict) {
+        alert("No assignment could be made!");
+        return;
+      }
       // Encode the assignments to Base64
       const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
       this.output = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
