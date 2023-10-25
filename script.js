@@ -32,10 +32,6 @@ function nameApp() {
       }
     },
 
-    selectAllExclusions() {
-      this.currentExclusions = [...this.availableExclusions];
-    },
-
     addNewName() {
       if (this.newName && this.newName.length > 0 && !this.nameEntries.some((entry) => entry.name === this.newName)) {
         this.nameEntries.push({ name: this.newName.trim(), exclusions: [] });
@@ -55,19 +51,19 @@ function nameApp() {
     saveExclusions() {
       const previousExclusions = [...this.currentNameEntry.exclusions];
       this.currentNameEntry.exclusions = [...this.currentExclusions];
-    
+
       // Ensure new exclusions are symmetrical
       for (let exclusion of this.currentExclusions) {
-        const excludedEntry = this.nameEntries.find(entry => entry.name === exclusion);
+        const excludedEntry = this.nameEntries.find((entry) => entry.name === exclusion);
         if (excludedEntry && !excludedEntry.exclusions.includes(this.currentNameEntry.name)) {
           excludedEntry.exclusions.push(this.currentNameEntry.name);
         }
       }
-    
+
       // Ensure removed exclusions are also removed symmetrically
       for (let previousExclusion of previousExclusions) {
         if (!this.currentExclusions.includes(previousExclusion)) {
-          const previouslyExcludedEntry = this.nameEntries.find(entry => entry.name === previousExclusion);
+          const previouslyExcludedEntry = this.nameEntries.find((entry) => entry.name === previousExclusion);
           if (previouslyExcludedEntry) {
             const index = previouslyExcludedEntry.exclusions.indexOf(this.currentNameEntry.name);
             if (index > -1) {
@@ -76,10 +72,10 @@ function nameApp() {
           }
         }
       }
-    
+
       this.exclusionDialogVisible = false;
       this.$refs.nameInput.focus();
-    },    
+    },
 
     removeName(nameEntry) {
       const index = this.nameEntries.indexOf(nameEntry);
@@ -98,7 +94,7 @@ function nameApp() {
       }
 
       // Ensure symmetrical exclusions are removed
-      const excludedEntry = this.nameEntries.find(entry => entry.name === exclusion);
+      const excludedEntry = this.nameEntries.find((entry) => entry.name === exclusion);
       if (excludedEntry) {
         const reverseExclusionIndex = excludedEntry.exclusions.indexOf(nameEntry.name);
         if (reverseExclusionIndex > -1) {
@@ -113,7 +109,9 @@ function nameApp() {
           acc[entry.name] = entry.exclusions;
           return acc;
         }, {}),
+        assignmentsOptions = this.getAssignments(names, exclusions),
         assignmentsDict = this.assignmentGPT(names, exclusions);
+
       console.log(assignmentsDict);
 
       if (!assignmentsDict) {
@@ -134,6 +132,86 @@ function nameApp() {
         .catch((err) => {
           console.error("Could not copy text: ", err);
         });
+    },
+
+    getAssignments(participantsArray, constraints) {
+      let visited = new Set();
+      let assignmentCombinations = [];
+      let foundCycles = [];
+      let stringifiedAssignments = [];
+
+      function isValid(current, nextParticipant) {
+        if (visited.has(nextParticipant)) {
+          return false;
+        }
+        if (constraints[current] && constraints[current].includes(nextParticipant)) {
+          return false;
+        }
+        return true;
+      }
+
+      function findCycle(current, start, path) {
+        if (path.length === Object.keys(participants).length) {
+          if (participants[current].includes(start)) {
+            return [...path, start];
+          }
+          return null;
+        }
+
+        for (let nextParticipant of participants[current]) {
+          if (isValid(current, nextParticipant)) {
+            visited.add(nextParticipant);
+            let newPath = findCycle(nextParticipant, start, [...path, nextParticipant]);
+            if (newPath) {
+              return newPath;
+            }
+            visited.delete(nextParticipant);
+          }
+        }
+        return null;
+      }
+
+      function isRotationOfFoundCycle(cycle) {
+        if (!cycle) return false;
+
+        let strCycle = cycle.join("");
+        for (let found of foundCycles) {
+          let doubled = found + found;
+          if (doubled.includes(strCycle)) {
+            return true;
+          }
+        }
+        return false;
+      }
+
+      let participants = {};
+      for (let name of participantsArray) {
+        participants[name] = participantsArray.filter((p) => p !== name);
+      }
+
+      for (let start of participantsArray) {
+        visited.clear();
+        visited.add(start);
+        let cycle = findCycle(start, start, [start]);
+        if (cycle && !isRotationOfFoundCycle(cycle)) {
+          foundCycles.push(cycle.join(""));
+          let assignments = {};
+          for (let i = 0; i < cycle.length - 1; i++) {
+            assignments[cycle[i]] = cycle[i + 1];
+          }
+          assignments = Object.entries(assignments).sort((a, b) => (a[0] > b[0] ? 1 : -1));
+          const stringifiedAssignment = JSON.stringify(assignments);
+          if (!stringifiedAssignments.includes(stringifiedAssignment)) {
+            assignmentCombinations.push(assignments);
+            stringifiedAssignments.push(stringifiedAssignment);
+            if (assignmentCombinations.length === 5) {
+              break;
+            }
+          }
+        }
+      }
+
+      return assignmentCombinations;
     },
 
     assignmentGPT(participantsArray, constraints) {

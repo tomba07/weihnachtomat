@@ -8,7 +8,7 @@
     <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
   </head>
-  <body class="bg-gray-100 font-sans" x-data="nameApp()" x-init="init()">
+  <body x-data="nameApp()" x-init="init()">
     <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
         <!-- List of entered names -->
@@ -61,7 +61,6 @@
         <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
           <div class="flex items-center mb-8">
             <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
-            <button @click="selectAllExclusions()" class="bg-transparent rounded p-2 hover:bg-gray-100">Select All</button>
           </div>
           <div class="mb-8">
             <template x-for="name in availableExclusions">
