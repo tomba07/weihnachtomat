@@ -134,140 +134,107 @@ function nameApp() {
         });
     },
 
-    getAssignments(participantsArray, constraints) {
-      let visited = new Set();
-      let assignmentCombinations = [];
-      let foundCycles = [];
-      let stringifiedAssignments = [];
-
-      function isValid(current, nextParticipant) {
-        if (visited.has(nextParticipant)) {
-          return false;
+    createParticipants(participantsArray) {
+        let participants = {};
+        for (let name of participantsArray) {
+            participants[name] = participantsArray.filter((p) => p !== name);
         }
-        if (constraints[current] && constraints[current].includes(nextParticipant)) {
-          return false;
-        }
-        return true;
-      }
-
-      function findCycle(current, start, path) {
-        if (path.length === Object.keys(participants).length) {
-          if (participants[current].includes(start)) {
-            return [...path, start];
-          }
-          return null;
-        }
-
-        for (let nextParticipant of participants[current]) {
-          if (isValid(current, nextParticipant)) {
-            visited.add(nextParticipant);
-            let newPath = findCycle(nextParticipant, start, [...path, nextParticipant]);
-            if (newPath) {
-              return newPath;
-            }
-            visited.delete(nextParticipant);
-          }
-        }
-        return null;
-      }
-
-      function isRotationOfFoundCycle(cycle) {
-        if (!cycle) return false;
-
-        let strCycle = cycle.join("");
-        for (let found of foundCycles) {
-          let doubled = found + found;
-          if (doubled.includes(strCycle)) {
-            return true;
-          }
-        }
-        return false;
-      }
-
-      let participants = {};
-      for (let name of participantsArray) {
-        participants[name] = participantsArray.filter((p) => p !== name);
-      }
-
-      for (let start of participantsArray) {
-        visited.clear();
-        visited.add(start);
-        let cycle = findCycle(start, start, [start]);
-        if (cycle && !isRotationOfFoundCycle(cycle)) {
-          foundCycles.push(cycle.join(""));
-          let assignments = {};
-          for (let i = 0; i < cycle.length - 1; i++) {
-            assignments[cycle[i]] = cycle[i + 1];
-          }
-          assignments = Object.entries(assignments).sort((a, b) => (a[0] > b[0] ? 1 : -1));
-          const stringifiedAssignment = JSON.stringify(assignments);
-          if (!stringifiedAssignments.includes(stringifiedAssignment)) {
-            assignmentCombinations.push(assignments);
-            stringifiedAssignments.push(stringifiedAssignment);
-            if (assignmentCombinations.length === 5) {
-              break;
-            }
-          }
-        }
-      }
-
-      return assignmentCombinations;
+        return participants;
     },
-
-    assignmentGPT(participantsArray, constraints) {
-      let visited = new Set();
-
-      // Convert the simple array to the old structure
-      let participants = {};
-      for (let name of participantsArray) {
-        participants[name] = participantsArray.filter((p) => p !== name);
-      }
-
-      function isValid(current, nextParticipant) {
+    
+    isValid(visited, constraints, current, nextParticipant) {
         if (visited.has(nextParticipant)) {
-          return false;
+            return false;
         }
         if (constraints[current] && constraints[current].includes(nextParticipant)) {
-          return false;
+            return false;
         }
         return true;
-      }
-
-      function findCycle(current, start, path) {
+    },
+    
+    findCycle(participants, visited, constraints, current, start, path) {
         if (path.length === Object.keys(participants).length) {
-          if (participants[current].includes(start)) {
-            path.push(start);
-            return path;
-          }
-          return null;
-        }
-
-        for (let nextParticipant of participants[current]) {
-          if (isValid(current, nextParticipant)) {
-            visited.add(nextParticipant);
-            let newPath = findCycle(nextParticipant, start, [...path, nextParticipant]);
-            if (newPath) {
-              return newPath;
+            if (participants[current].includes(start)) {
+                return [...path, start];
             }
-            visited.delete(nextParticipant);
-          }
+            return null;
+        }
+    
+        for (let nextParticipant of participants[current]) {
+            if (this.isValid(visited, constraints, current, nextParticipant)) {
+                visited.add(nextParticipant);
+                let newPath = this.findCycle(participants, visited, constraints, nextParticipant, start, [...path, nextParticipant]);
+                if (newPath) {
+                    return newPath;
+                }
+                visited.delete(nextParticipant);
+            }
         }
         return null;
-      }
-
-      let keys = Object.keys(participants);
-      let start = keys[Math.floor(Math.random() * keys.length)];
-      visited.add(start);
-      let cycle = findCycle(start, start, [start]);
-      if (cycle) {
-        let assignments = {};
-        for (let i = 0; i < cycle.length - 1; i++) {
-          assignments[cycle[i]] = cycle[i + 1];
+    },
+    
+    getAssignments(participantsArray, constraints) {
+        let visited = new Set();
+        let assignmentCombinations = [];
+        let foundCycles = [];
+        let stringifiedAssignments = [];
+    
+        let participants = this.createParticipants(participantsArray);
+    
+        function isRotationOfFoundCycle(cycle) {
+            if (!cycle) return false;
+            let strCycle = cycle.join("");
+            for (let found of foundCycles) {
+                let doubled = found + found;
+                if (doubled.includes(strCycle)) {
+                    return true;
+                }
+            }
+            return false;
         }
-        return assignments;
-      } else {
-        return null;
-      }
+    
+        for (let start of participantsArray) {
+            visited.clear();
+            visited.add(start);
+            let cycle = this.findCycle(participants, visited, constraints, start, start, [start]);
+            if (cycle && !isRotationOfFoundCycle(cycle)) {
+                foundCycles.push(cycle.join(""));
+                let assignments = {};
+                for (let i = 0; i < cycle.length - 1; i++) {
+                    assignments[cycle[i]] = cycle[i + 1];
+                }
+                assignments = Object.entries(assignments).sort((a, b) => (a[0] > b[0] ? 1 : -1));
+                const stringifiedAssignment = JSON.stringify(assignments);
+                if (!stringifiedAssignments.includes(stringifiedAssignment)) {
+                    assignmentCombinations.push(assignments);
+                    stringifiedAssignments.push(stringifiedAssignment);
+                    if (assignmentCombinations.length === 5) {
+                        break;
+                    }
+                }
+            }
+        }
+    
+        return assignmentCombinations;
+    },
+    
+    assignmentGPT(participantsArray, constraints) {
+        let visited = new Set();
+        let participants = this.createParticipants(participantsArray);
+    
+        let keys = Object.keys(participants);
+        let start = keys[Math.floor(Math.random() * keys.length)];
+        visited.add(start);
+        let cycle = this.findCycle(participants, visited, constraints, start, start, [start]);
+        if (cycle) {
+            let assignments = {};
+            for (let i = 0; i < cycle.length - 1; i++) {
+                assignments[cycle[i]] = cycle[i + 1];
+            }
+            return assignments;
+        } else {
+            return null;
+        }
     },
 
     removeAssignmentsFromURL() {
