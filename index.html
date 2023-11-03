@@ -63,10 +63,10 @@
             <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
           </div>
           <div class="mb-8">
-            <template x-for="name in availableExclusions">
+            <template x-for="name in availableExclusions" :key="name">
               <div class="flex items-center mb-2">
-                <input type="checkbox" :value="name" x-model="currentExclusions" class="mr-2" />
-                <label x-text="name"></label>
+                <input type="checkbox" :id="name" :value="name" x-model="currentExclusions" class="mr-2" />
+                <label :for="name" x-text="name"></label>
               </div>
             </template>
           </div>
