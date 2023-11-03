@@ -63,11 +63,15 @@ class BipartiteGraph {
     return matching;
   }
 
-  getPairs() {
-    return this.pair
-      .slice(0, this.pair.length / 2)
-      .map((value, index) => [index, value])
-      .filter((pair) => pair[1] !== -1);
+  getPairs(participants) {
+    let half = this.pair.length / 2;
+    let resultObj = {};
+    for (let i = 0; i < half; i++) {
+      if (this.pair[i] !== -1) {
+        resultObj[participants[i]] = participants[this.pair[i] - half];
+      }
+    }
+    return resultObj;
   }
 }
 
@@ -209,6 +213,7 @@ function nameApp() {
     secretSanta(participants, exclusionsObj) {
       const graph = new BipartiteGraph(participants.length * 2);
 
+      // Shuffle the participants to randomize the results
       participants.sort(() => (Math.random() > 0.5 ? 1 : -1));
 
       // Build the graph edges based on exclusions
@@ -221,24 +226,9 @@ function nameApp() {
         }
       }
 
-      // Run the Hopcroft-Karp algorithm to find maximum matching
       graph.hopcroftKarp();
 
-      // Retrieve pairs and validate them
-      let pairs = graph.getPairs();
-      let result = {}; // Initialize an empty Map
-      for (let i = 0; i < pairs.length; i++) {
-        const [from, to] = pairs[i];
-        // If a participant is matched to themselves or to an excluded participant, return an empty map
-        if (from === to || (exclusionsObj[participants[from]] && exclusionsObj[participants[from]].includes(participants[to - participants.length]))) {
-          return new Map(); // Return an empty Map instead of null
-        }
-        // Add the valid pairs to the map
-        result[participants[from]] = participants[to - participants.length];
-      }
-
-      // No invalid pairs found, return the Map
-      return result;
+      return graph.getPairs(participants);
     },
 
     removeAssignmentsFromURL() {
