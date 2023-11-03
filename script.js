@@ -226,9 +226,9 @@ function nameApp() {
         }
       }
 
-      graph.hopcroftKarp();
+      const count = graph.hopcroftKarp();
 
-      return graph.getPairs(participants);
+      return count === participants.length ? graph.getPairs(participants) : null;
     },
 
     removeAssignmentsFromURL() {
