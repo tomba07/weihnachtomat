@@ -1,3 +1,76 @@
+class BipartiteGraph {
+  constructor(size) {
+    this.adjList = Array.from({ length: size }, () => []);
+    this.pair = Array.from({ length: size }, () => -1);
+    this.dist = Array.from({ length: size }, () => -1);
+  }
+
+  addEdge(u, v) {
+    this.adjList[u].push(v);
+  }
+
+  bfs() {
+    let queue = [];
+    for (let u = 0; u < this.pair.length / 2; u++) {
+      if (this.pair[u] === -1) {
+        this.dist[u] = 0;
+        queue.push(u);
+      } else {
+        this.dist[u] = Infinity;
+      }
+    }
+    this.dist[-1] = Infinity;
+    while (queue.length > 0) {
+      let u = queue.shift();
+      if (u !== -1) {
+        for (let v of this.adjList[u]) {
+          if (this.dist[this.pair[v]] === Infinity) {
+            this.dist[this.pair[v]] = this.dist[u] + 1;
+            queue.push(this.pair[v]);
+          }
+        }
+      }
+    }
+    return this.dist[-1] !== Infinity;
+  }
+
+  dfs(u) {
+    if (u !== -1) {
+      for (let v of this.adjList[u]) {
+        if (this.dist[this.pair[v]] === this.dist[u] + 1) {
+          if (this.dfs(this.pair[v])) {
+            this.pair[v] = u;
+            this.pair[u] = v;
+            return true;
+          }
+        }
+      }
+      this.dist[u] = Infinity;
+      return false;
+    }
+    return true;
+  }
+
+  hopcroftKarp() {
+    let matching = 0;
+    while (this.bfs()) {
+      for (let u = 0; u < this.pair.length / 2; u++) {
+        if (this.pair[u] === -1 && this.dfs(u)) {
+          matching++;
+        }
+      }
+    }
+    return matching;
+  }
+
+  getPairs() {
+    return this.pair
+      .slice(0, this.pair.length / 2)
+      .map((value, index) => [index, value])
+      .filter((pair) => pair[1] !== -1);
+  }
+}
+
 function nameApp() {
   return {
     nameEntries: [],
@@ -109,8 +182,7 @@ function nameApp() {
           acc[entry.name] = entry.exclusions;
           return acc;
         }, {}),
-        assignmentsOptions = this.getAssignments(names, exclusions),
-        assignmentsDict = this.assignmentGPT(names, exclusions);
+        assignmentsDict = this.secretSanta(names, exclusions);
 
       console.log(assignmentsDict);
 
@@ -134,107 +206,39 @@ function nameApp() {
         });
     },
 
-    createParticipants(participantsArray) {
-        let participants = {};
-        for (let name of participantsArray) {
-            participants[name] = participantsArray.filter((p) => p !== name);
+    secretSanta(participants, exclusionsObj) {
+      const graph = new BipartiteGraph(participants.length * 2);
+
+      participants.sort(() => (Math.random() > 0.5 ? 1 : -1));
+
+      // Build the graph edges based on exclusions
+      for (let i = 0; i < participants.length; i++) {
+        for (let j = participants.length; j < participants.length * 2; j++) {
+          // Ensure i and j-participants.length are not the same and not in each other's exclusion list
+          if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(participants[j - participants.length]))) {
+            graph.addEdge(i, j);
+          }
         }
-        return participants;
-    },
-    
-    isValid(visited, constraints, current, nextParticipant) {
-        if (visited.has(nextParticipant)) {
-            return false;
+      }
+
+      // Run the Hopcroft-Karp algorithm to find maximum matching
+      graph.hopcroftKarp();
+
+      // Retrieve pairs and validate them
+      let pairs = graph.getPairs();
+      let result = {}; // Initialize an empty Map
+      for (let i = 0; i < pairs.length; i++) {
+        const [from, to] = pairs[i];
+        // If a participant is matched to themselves or to an excluded participant, return an empty map
+        if (from === to || (exclusionsObj[participants[from]] && exclusionsObj[participants[from]].includes(participants[to - participants.length]))) {
+          return new Map(); // Return an empty Map instead of null
         }
-        if (constraints[current] && constraints[current].includes(nextParticipant)) {
-            return false;
-        }
-        return true;
-    },
-    
-    findCycle(participants, visited, constraints, current, start, path) {
-        if (path.length === Object.keys(participants).length) {
-            if (participants[current].includes(start)) {
-                return [...path, start];
-            }
-            return null;
-        }
-    
-        for (let nextParticipant of participants[current]) {
-            if (this.isValid(visited, constraints, current, nextParticipant)) {
-                visited.add(nextParticipant);
-                let newPath = this.findCycle(participants, visited, constraints, nextParticipant, start, [...path, nextParticipant]);
-                if (newPath) {
-                    return newPath;
-                }
-                visited.delete(nextParticipant);
-            }
-        }
-        return null;
-    },
-    
-    getAssignments(participantsArray, constraints) {
-        let visited = new Set();
-        let assignmentCombinations = [];
-        let foundCycles = [];
-        let stringifiedAssignments = [];
-    
-        let participants = this.createParticipants(participantsArray);
-    
-        function isRotationOfFoundCycle(cycle) {
-            if (!cycle) return false;
-            let strCycle = cycle.join("");
-            for (let found of foundCycles) {
-                let doubled = found + found;
-                if (doubled.includes(strCycle)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-    
-        for (let start of participantsArray) {
-            visited.clear();
-            visited.add(start);
-            let cycle = this.findCycle(participants, visited, constraints, start, start, [start]);
-            if (cycle && !isRotationOfFoundCycle(cycle)) {
-                foundCycles.push(cycle.join(""));
-                let assignments = {};
-                for (let i = 0; i < cycle.length - 1; i++) {
-                    assignments[cycle[i]] = cycle[i + 1];
-                }
-                assignments = Object.entries(assignments).sort((a, b) => (a[0] > b[0] ? 1 : -1));
-                const stringifiedAssignment = JSON.stringify(assignments);
-                if (!stringifiedAssignments.includes(stringifiedAssignment)) {
-                    assignmentCombinations.push(assignments);
-                    stringifiedAssignments.push(stringifiedAssignment);
-                    if (assignmentCombinations.length === 5) {
-                        break;
-                    }
-                }
-            }
-        }
-    
-        return assignmentCombinations;
-    },
-    
-    assignmentGPT(participantsArray, constraints) {
-        let visited = new Set();
-        let participants = this.createParticipants(participantsArray);
-    
-        let keys = Object.keys(participants);
-        let start = keys[Math.floor(Math.random() * keys.length)];
-        visited.add(start);
-        let cycle = this.findCycle(participants, visited, constraints, start, start, [start]);
-        if (cycle) {
-            let assignments = {};
-            for (let i = 0; i < cycle.length - 1; i++) {
-                assignments[cycle[i]] = cycle[i + 1];
-            }
-            return assignments;
-        } else {
-            return null;
-        }
+        // Add the valid pairs to the map
+        result[participants[from]] = participants[to - participants.length];
+      }
+
+      // No invalid pairs found, return the Map
+      return result;
     },
 
     removeAssignmentsFromURL() {
