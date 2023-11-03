@@ -5,6 +5,20 @@ class BipartiteGraph {
     this.dist = Array.from({ length: size }, () => -1);
   }
 
+  logWarnings = function (participants) {
+    let singleOptions = [];
+
+    for (let i = 0; i < this.adjList.length / 2; i++) {
+      if (this.adjList[i].length === 1) {
+        singleOptions.push(participants[i]);
+      }
+    }
+
+    console.log({
+      singleOptions
+    });
+  };
+
   addEdge(u, v) {
     this.adjList[u].push(v);
   }
@@ -198,6 +212,8 @@ function nameApp() {
           }
         }
       }
+
+      graph.logWarnings(participants);
 
       const count = graph.hopcroftKarp();
 
