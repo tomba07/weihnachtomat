@@ -126,9 +126,9 @@ function nameApp() {
 
       if (!name || name.length === 0) {
         alert("Please enter a valid name.");
-      }else if(this.nameEntries.some((entry) => entry.name === name)){
+      } else if (this.nameEntries.some((entry) => entry.name === name)) {
         alert("Please enter a unique name.");
-      }else{
+      } else {
         this.nameEntries.push({ name: name, exclusions: [] });
         this.newName = "";
       }
@@ -228,31 +228,31 @@ function nameApp() {
     },
 
     verifySingleOptions() {
-        const names = this.nameEntries.map((entry) => entry.name),
-          exclusions = this.nameEntries.reduce((acc, entry) => {
-            acc[entry.name] = entry.exclusions;
-            return acc;
-          }, {});
-      
-        const graph = new BipartiteGraph(names.length * 2);
-      
-        // Populate the graph with edges that are not excluded
-        names.forEach((name, i) => {
-          names.forEach((otherName, j) => {
-            if (i !== j && !(exclusions[name] && exclusions[name].includes(otherName))) {
-              graph.addEdge(i, names.length + j);
-            }
-          });
+      const names = this.nameEntries.map((entry) => entry.name),
+        exclusions = this.nameEntries.reduce((acc, entry) => {
+          acc[entry.name] = entry.exclusions;
+          return acc;
+        }, {});
+
+      const graph = new BipartiteGraph(names.length * 2);
+
+      // Populate the graph with edges that are not excluded
+      names.forEach((name, i) => {
+        names.forEach((otherName, j) => {
+          if (i !== j && !(exclusions[name] && exclusions[name].includes(otherName))) {
+            graph.addEdge(i, names.length + j);
+          }
         });
-      
-        const maxMatching = graph.hopcroftKarp();
-        const warnings = graph.createWarnings(names);
-      
-        if (maxMatching !== names.length) {
-          alert("It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.");
-        }else if (warnings.singleOptions.length > 0) {
-          alert("Warning: Some participants have only one possible match. This can lead to predictable results.");
-        }
+      });
+
+      const maxMatching = graph.hopcroftKarp();
+      const warnings = graph.createWarnings(names);
+
+      if (maxMatching !== names.length) {
+        alert("It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.");
+      } else if (warnings.singleOptions.length > 0) {
+        alert("Warning: Some participants have only one possible match. This can lead to predictable results.");
       }
+    }
   };
 }
