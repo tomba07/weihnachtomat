@@ -126,7 +126,6 @@ function nameApp() {
     },
 
     saveExclusions() {
-      const previousExclusions = [...this.currentNameEntry.exclusions];
       this.currentNameEntry.exclusions = [...this.currentExclusions];
 
       this.exclusionDialogVisible = false;
@@ -140,6 +139,10 @@ function nameApp() {
         this.nameEntries.splice(index, 1);
       }
       this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
+      //remove name from exclusions
+      this.nameEntries.forEach((entry) => {
+        this.removeExclusion(entry, nameEntry.name);
+      });
     },
 
     removeExclusion(nameEntry, exclusion) {
