@@ -122,11 +122,15 @@ function nameApp() {
     },
 
     addNewName() {
-      if (this.newName && this.newName.length > 0 && !this.nameEntries.some((entry) => entry.name === this.newName)) {
-        this.nameEntries.push({ name: this.newName.trim(), exclusions: [] });
-        this.newName = "";
-      } else {
+      const name = this.newName.trim();
+
+      if (!name || name.length === 0) {
+        alert("Please enter a valid name.");
+      }else if(this.nameEntries.some((entry) => entry.name === name)){
         alert("Please enter a unique name.");
+      }else{
+        this.nameEntries.push({ name: name, exclusions: [] });
+        this.newName = "";
       }
     },
 
