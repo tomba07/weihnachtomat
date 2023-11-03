@@ -5,7 +5,7 @@ class BipartiteGraph {
     this.dist = Array.from({ length: size }, () => -1);
   }
 
-  logWarnings = function (participants) {
+  createWarnings = function (participants) {
     let singleOptions = [];
 
     for (let i = 0; i < this.adjList.length / 2; i++) {
@@ -14,9 +14,7 @@ class BipartiteGraph {
       }
     }
 
-    console.log({
-      singleOptions
-    });
+    return { singleOptions };
   };
 
   addEdge(u, v) {
@@ -141,7 +139,7 @@ function nameApp() {
 
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
-
+      this.verifySingleOptions();
       this.exclusionDialogVisible = false;
       this.$refs.nameInput.focus();
     },
@@ -157,6 +155,7 @@ function nameApp() {
       this.nameEntries.forEach((entry) => {
         this.removeExclusion(entry, nameEntry.name);
       });
+      this.verifySingleOptions();
     },
 
     removeExclusion(nameEntry, exclusion) {
@@ -213,8 +212,6 @@ function nameApp() {
         }
       }
 
-      graph.logWarnings(participants);
-
       const count = graph.hopcroftKarp();
 
       return count === participants.length ? graph.getPairs(participants) : null;
@@ -224,6 +221,34 @@ function nameApp() {
       const url = new URL(window.location);
       url.searchParams.delete("assignments");
       window.location.href = url;
-    }
+    },
+
+    verifySingleOptions() {
+        const names = this.nameEntries.map((entry) => entry.name),
+          exclusions = this.nameEntries.reduce((acc, entry) => {
+            acc[entry.name] = entry.exclusions;
+            return acc;
+          }, {});
+      
+        const graph = new BipartiteGraph(names.length * 2);
+      
+        // Populate the graph with edges that are not excluded
+        names.forEach((name, i) => {
+          names.forEach((otherName, j) => {
+            if (i !== j && !(exclusions[name] && exclusions[name].includes(otherName))) {
+              graph.addEdge(i, names.length + j);
+            }
+          });
+        });
+      
+        const maxMatching = graph.hopcroftKarp();
+        const warnings = graph.createWarnings(names);
+      
+        if (maxMatching !== names.length) {
+          alert("It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.");
+        }else if (warnings.singleOptions.length > 0) {
+          alert("Warning: Some participants have only one possible match. This can lead to predictable results.");
+        }
+      }
   };
 }
