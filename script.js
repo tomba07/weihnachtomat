@@ -100,11 +100,11 @@ function nameApp() {
     availableExclusions: [],
     currentExclusions: [],
     currentNameEntry: null,
-    output: "",
+    assignmentLink: "",
     newName: "",
     decodedAssignments: {},
     selectedName: null,
-    linkCopied: false,
+    showLinkCopiedMessage: false,
     error: "",
     warning: "",
 
@@ -219,14 +219,17 @@ function nameApp() {
       }
       // Encode the assignments to Base64
       const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
-      this.output = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
+      this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
     },
 
     copyToClipboard() {
       navigator.clipboard
-        .writeText(this.output)
+        .writeText(this.assignmentLink)
         .then(() => {
-          this.linkCopied = true;
+          this.showLinkCopiedMessage = true;
+          setTimeout(() => {
+            this.showLinkCopiedMessage = false;
+          }, 500);
         })
         .catch((err) => {
           console.error("Could not copy text: ", err);

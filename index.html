@@ -85,13 +85,14 @@
       </div>
     </div>
     <!-- Link Panel -->
-    <div x-show="output" class="mx-auto mt-4 max-w-lg px-4">
+    <div x-show="assignmentLink" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
+        <b><span class="mr-2 flex-grow">Assignment Link to Share:</span></b>
         <div class="flex items-center">
-          <span class="mr-2 flex-grow truncate" x-text="output"></span>
+          <a class="mr-2 flex-grow truncate text-blue-500" :href="assignmentLink" target="_blank" x-text="assignmentLink" x-bind:href="assignmentLink" rel="noopener noreferrer"></a>
           <button @click="copyToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
         </div>
-        <p x-show="linkCopied" class="text-gray-500">link copied to clipboard!</p>
+        <p x-show="showLinkCopiedMessage" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-gray-500">link copied to clipboard!</p>
       </div>
     </div>
     <!-- Resolution Panel -->
