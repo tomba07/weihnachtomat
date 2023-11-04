@@ -1,14 +1,15 @@
 class BipartiteGraph {
   constructor(size) {
-    this.adjList = Array.from({ length: size }, () => []);
-    this.pair = Array.from({ length: size }, () => -1);
-    this.dist = Array.from({ length: size }, () => -1);
+    this.adjList = new Array(size).fill().map(() => []);
+    this.pair = new Array(size).fill(-1);
+    this.dist = new Array(size).fill(-1);
   }
 
-  createWarnings = function (participants) {
+  createWarnings = (participants) => {
     let singleOptions = [];
+    let halfSize = this.adjList.length / 2;
 
-    for (let i = 0; i < this.adjList.length / 2; i++) {
+    for (let i = 0; i < halfSize; i++) {
       if (this.adjList[i].length === 1) {
         singleOptions.push(participants[i]);
       }
@@ -18,29 +19,34 @@ class BipartiteGraph {
   };
 
   addEdge(u, v) {
+    if (u < 0 || u >= this.adjList.length || v < 0 || v >= this.adjList.length) {
+      throw new Error("Edge indices are out of bounds.");
+    }
     this.adjList[u].push(v);
   }
 
   bfs() {
+    this.dist.fill(Infinity);
     let queue = [];
-    for (let u = 0; u < this.pair.length / 2; u++) {
-      if (this.pair[u] === -1) {
+
+    this.pair.map((p, u) => {
+      if (p === -1) {
         this.dist[u] = 0;
         queue.push(u);
-      } else {
-        this.dist[u] = Infinity;
       }
-    }
+    });
+
     this.dist[-1] = Infinity;
+
     while (queue.length > 0) {
       let u = queue.shift();
       if (u !== -1) {
-        for (let v of this.adjList[u]) {
+        this.adjList[u].forEach(v => {
           if (this.dist[this.pair[v]] === Infinity) {
             this.dist[this.pair[v]] = this.dist[u] + 1;
             queue.push(this.pair[v]);
           }
-        }
+        });
       }
     }
     return this.dist[-1] !== Infinity;
@@ -48,7 +54,7 @@ class BipartiteGraph {
 
   dfs(u) {
     if (u !== -1) {
-      for (let v of this.adjList[u]) {
+      return this.adjList[u].some(v => {
         if (this.dist[this.pair[v]] === this.dist[u] + 1) {
           if (this.dfs(this.pair[v])) {
             this.pair[v] = u;
@@ -56,9 +62,7 @@ class BipartiteGraph {
             return true;
           }
         }
-      }
-      this.dist[u] = Infinity;
-      return false;
+      });
     }
     return true;
   }
@@ -66,23 +70,25 @@ class BipartiteGraph {
   hopcroftKarp() {
     let matching = 0;
     while (this.bfs()) {
-      for (let u = 0; u < this.pair.length / 2; u++) {
-        if (this.pair[u] === -1 && this.dfs(u)) {
+      this.pair.forEach((p, u) => {
+        if (p === -1 && this.dfs(u)) {
           matching++;
         }
-      }
+      });
     }
     return matching;
   }
 
   getPairs(participants) {
-    let half = this.pair.length / 2;
     let resultObj = {};
-    for (let i = 0; i < half; i++) {
-      if (this.pair[i] !== -1) {
-        resultObj[participants[i]] = participants[this.pair[i] - half];
+    let half = participants.length;
+
+    this.pair.slice(0, half).forEach((p, i) => {
+      if (p !== -1) {
+        resultObj[participants[i]] = participants[p - half];
       }
-    }
+    });
+
     return resultObj;
   }
 }
