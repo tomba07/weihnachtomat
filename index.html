@@ -59,8 +59,9 @@
           <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0" :class="{'opacity-50 cursor-not-allowed': newName.trim().length <= 0}">Add</button>
         </form>
       </div>
-      <div class="mt-2">
-        <button @click="assign()" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 2 || error)}">Assign</button>
+      <div class="mt-2 flex space-x-4">
+        <button @click="assign()" class="shadow-lg bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 2 || error)}">Assign</button>
+        <button @click="saveConfig()" class="shadow-lg bg-white p-2 rounded">Save as Link</button>
       </div>
       <!-- Exclusion Dialog -->
       <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false; $refs.nameInput.focus()">
@@ -84,14 +85,26 @@
         <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
       </div>
     </div>
-    <!-- Link Panel -->
-    <div x-show="output" class="mx-auto mt-4 max-w-lg px-4">
+    <!-- Assignment Link Panel -->
+    <div x-show="assignmentLink" class="mx-auto mt-4 max-w-lg px-4">
       <div class="p-4 bg-white rounded shadow-lg">
+        <b><span class="mr-2 flex-grow">Assignment Link:</span></b>
         <div class="flex items-center">
-          <span class="mr-2 flex-grow truncate" x-text="output"></span>
-          <button @click="copyToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
+          <a class="mr-2 flex-grow truncate" :href="assignmentLink" target="_blank" x-text="assignmentLink" x-bind:href="assignmentLink" rel="noopener noreferrer"></a>
+          <button @click="copyAssignmentLinkToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
         </div>
-        <p x-show="linkCopied" class="text-gray-500">link copied to clipboard!</p>
+        <p x-show="showAssignmentLinkCopiedMessage" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-gray-500">link copied to clipboard!</p>
+      </div>
+    </div>
+
+    <div x-show="savedConfigLink" class="mx-auto mt-4 max-w-lg px-4">
+      <div class="p-4 bg-white rounded shadow-lg">
+        <b><span class="mr-2 flex-grow">Link with current state:</span></b>
+        <div class="flex items-center">
+          <a class="mr-2 flex-grow truncate" :href="savedConfigLink" target="_blank" x-text="savedConfigLink" x-bind:href="savedConfigLink" rel="noopener noreferrer"></a>
+          <button @click="copyConfigLinkToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
+        </div>
+        <p x-show="showConfigLinkCopiedMessage" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-gray-500">link copied to clipboard!</p>
       </div>
     </div>
     <!-- Resolution Panel -->

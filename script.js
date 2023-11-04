@@ -41,7 +41,7 @@ class BipartiteGraph {
     while (queue.length > 0) {
       let u = queue.shift();
       if (u !== -1) {
-        this.adjList[u].forEach(v => {
+        this.adjList[u].forEach((v) => {
           if (this.dist[this.pair[v]] === Infinity) {
             this.dist[this.pair[v]] = this.dist[u] + 1;
             queue.push(this.pair[v]);
@@ -54,7 +54,7 @@ class BipartiteGraph {
 
   dfs(u) {
     if (u !== -1) {
-      return this.adjList[u].some(v => {
+      return this.adjList[u].some((v) => {
         if (this.dist[this.pair[v]] === this.dist[u] + 1) {
           if (this.dfs(this.pair[v])) {
             this.pair[v] = u;
@@ -100,11 +100,13 @@ function nameApp() {
     availableExclusions: [],
     currentExclusions: [],
     currentNameEntry: null,
-    output: "",
+    assignmentLink: "",
+    savedConfigLink: "",
     newName: "",
     decodedAssignments: {},
     selectedName: null,
-    linkCopied: false,
+    showAssignmentLinkCopiedMessage: false,
+    showConfigLinkCopiedMessage: false,
     error: "",
     warning: "",
 
@@ -113,6 +115,13 @@ function nameApp() {
       this.$refs.nameInput.focus();
       const urlParams = new URLSearchParams(window.location.search);
       const encodedAssignments = urlParams.get("assignments");
+      const encodedConfig = urlParams.get("config");
+      if (encodedConfig) {
+        decodedConfig = JSON.parse(atob(encodedConfig));
+        this.nameEntries = decodedConfig.nameEntries;
+        this.verifySingleOptions();
+        window.history.replaceState({}, document.title, "/");
+      }
       if (encodedAssignments) {
         this.decodedAssignments = JSON.parse(atob(encodedAssignments));
       }
@@ -200,14 +209,36 @@ function nameApp() {
       }
       // Encode the assignments to Base64
       const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
-      this.output = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
+      this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
     },
 
-    copyToClipboard() {
+    saveConfig() {
+      const encodedConfig = btoa(JSON.stringify({ nameEntries: this.nameEntries }));
+      this.savedConfigLink = location.protocol + "//" + location.host + location.pathname + "?config=" + encodedConfig;
+    },
+
+    copyAssignmentLinkToClipboard() {
       navigator.clipboard
-        .writeText(this.output)
+        .writeText(this.assignmentLink)
         .then(() => {
-          this.linkCopied = true;
+          this.showAssignmentLinkCopiedMessage = true;
+          setTimeout(() => {
+            this.showAssignmentLinkCopiedMessage = false;
+          }, 500);
+        })
+        .catch((err) => {
+          console.error("Could not copy text: ", err);
+        });
+    },
+
+    copyConfigLinkToClipboard() {
+      navigator.clipboard
+        .writeText(this.savedConfigLink)
+        .then(() => {
+          this.showConfigLinkCopiedMessage = true;
+          setTimeout(() => {
+            this.showConfigLinkCopiedMessage = false;
+          }, 500);
         })
         .catch((err) => {
           console.error("Could not copy text: ", err);
