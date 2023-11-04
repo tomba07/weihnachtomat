@@ -41,7 +41,7 @@ class BipartiteGraph {
     while (queue.length > 0) {
       let u = queue.shift();
       if (u !== -1) {
-        this.adjList[u].forEach(v => {
+        this.adjList[u].forEach((v) => {
           if (this.dist[this.pair[v]] === Infinity) {
             this.dist[this.pair[v]] = this.dist[u] + 1;
             queue.push(this.pair[v]);
@@ -54,7 +54,7 @@ class BipartiteGraph {
 
   dfs(u) {
     if (u !== -1) {
-      return this.adjList[u].some(v => {
+      return this.adjList[u].some((v) => {
         if (this.dist[this.pair[v]] === this.dist[u] + 1) {
           if (this.dfs(this.pair[v])) {
             this.pair[v] = u;
@@ -109,6 +109,7 @@ function nameApp() {
     warning: "",
 
     init() {
+      this.loadNameEntries();
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
       this.$refs.nameInput.focus();
       const urlParams = new URLSearchParams(window.location.search);
@@ -116,6 +117,24 @@ function nameApp() {
       if (encodedAssignments) {
         this.decodedAssignments = JSON.parse(atob(encodedAssignments));
       }
+    },
+
+    saveNameEntries() {
+      localStorage.setItem("nameEntries", JSON.stringify(this.nameEntries));
+    },
+
+    // Method to load nameEntries from localStorage
+    loadNameEntries() {
+      const savedEntries = localStorage.getItem("nameEntries");
+      if (savedEntries) {
+        this.nameEntries = JSON.parse(savedEntries);
+        this.verifySingleOptions();
+      }
+    },
+
+    updateNameEntries() {
+      this.saveNameEntries();
+      this.verifySingleOptions();
     },
 
     isObjectEmpty(objectName) {
@@ -141,7 +160,7 @@ function nameApp() {
         this.newName = "";
       }
 
-      this.verifySingleOptions();
+      this.updateNameEntries();
     },
 
     showExclusionDialog(nameEntry) {
@@ -153,7 +172,7 @@ function nameApp() {
 
     saveExclusions() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
-      this.verifySingleOptions();
+      this.updateNameEntries();
       this.exclusionDialogVisible = false;
       this.$refs.nameInput.focus();
     },
@@ -169,7 +188,7 @@ function nameApp() {
       this.nameEntries.forEach((entry) => {
         this.removeExclusion(entry, nameEntry.name);
       });
-      this.verifySingleOptions();
+      this.updateNameEntries();
     },
 
     removeExclusion(nameEntry, exclusion) {
@@ -178,7 +197,7 @@ function nameApp() {
       if (index > -1) {
         nameEntry.exclusions.splice(index, 1);
       }
-      this.verifySingleOptions();
+      this.updateNameEntries();
     },
 
     assign() {
