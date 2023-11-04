@@ -99,6 +99,8 @@ function nameApp() {
     decodedAssignments: {},
     selectedName: null,
     linkCopied: false,
+    error: "",
+    warning: "",
 
     init() {
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
@@ -132,6 +134,8 @@ function nameApp() {
         this.nameEntries.push({ name: name, exclusions: [] });
         this.newName = "";
       }
+
+      this.verifySingleOptions();
     },
 
     showExclusionDialog(nameEntry) {
@@ -168,9 +172,13 @@ function nameApp() {
       if (index > -1) {
         nameEntry.exclusions.splice(index, 1);
       }
+      this.verifySingleOptions();
     },
 
     assign() {
+      if (this.nameEntries?.length < 2 || this.error) {
+        return;
+      }
       const names = this.nameEntries.map((entry) => entry.name),
         exclusions = this.nameEntries.reduce((acc, entry) => {
           acc[entry.name] = entry.exclusions;
@@ -248,10 +256,16 @@ function nameApp() {
       const maxMatching = graph.hopcroftKarp();
       const warnings = graph.createWarnings(names);
 
+      // Reset error and warning messages before checking
+      this.error = "";
+      this.warning = "";
+
       if (maxMatching !== names.length) {
-        alert("It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.");
+        // Error: not all names can be matched due to exclusions
+        this.error = "It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.";
       } else if (warnings.singleOptions.length > 0) {
-        alert("Warning: Some participants have only one possible match. This can lead to predictable results.");
+        // Warning: some participants have only one possible match
+        this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
       }
     }
   };
