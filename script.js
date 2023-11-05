@@ -171,6 +171,7 @@ function nameApp() {
       this.$nextTick(() => {
         const namesList = document.getElementById('names-list');
         namesList.scrollTop = namesList.scrollHeight;
+        this.$refs.nameInput.focus();
       });
 
       this.updateNameEntries();
