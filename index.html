@@ -1,114 +1,135 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <title>Weihnachtomat</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <script src="script.js" defer></script>
-    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
-    <script src="https://unpkg.com/heroicons@1.0.4/dist/heroicons-sprite.js"></script>
-    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-  </head>
-  <body x-data="nameApp()" x-init="init()">
-    <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
-      <div class="p-4 bg-white rounded shadow-lg">
-        <!-- Error label -->
-        <div x-show="nameEntries.length > 2 && error" x-text="error" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"></div>
 
-        <!-- Warning label -->
-        <div x-show="nameEntries.length > 2 && warning" x-text="warning" class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert"></div>
+<head>
+  <title>Weihnachtomat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="script.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+  <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
 
-        <!-- List of entered names -->
-        <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
-          <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
-            <div class="flex items-center">
-              <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
-              <button @click="showExclusionDialog(nameEntry)" :disabled="nameEntries.length < 3" class="bg-transparent text-blue-500 p-2 rounded mr-2 hover:bg-gray-100" :class="{'opacity-50 cursor-not-allowed': nameEntries.length < 2}">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
-                </svg>
-              </button>
-              <button @click="removeName(nameEntry)" class="bg-transparent text-red-500 p-2 rounded hover:bg-gray-100">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6">
-                  <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                  />
-                </svg>
-              </button>
-            </div>
-            <div class="flex flex-wrap gap-1">
-              <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
-                <div class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-100 py-2 px-3.5 align-baseline text-xs leading-none" data-dismissible="chip">
-                  <div class="mr-5 mt-px" x-text="exclusion"></div>
-                  <div class="absolute top-1 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400" data-dismissible-target="chip">
-                    <div role="button" class="h-5 w-5 p-1" @click="removeExclusion(nameEntry, exclusion)">
-                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
-                      </svg>
-                    </div>
+<body x-data="nameApp()" x-init="init()">
+  <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
+    <div class="p-4 bg-white rounded shadow-lg">
+      <!-- Error label -->
+      <div x-show="nameEntries.length > 2 && error" x-text="error"
+        class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"></div>
+
+      <!-- Warning label -->
+      <div x-show="nameEntries.length > 2 && warning" x-text="warning"
+        class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert"></div>
+
+      <!-- List of entered names -->
+      <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
+        <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
+          <div class="flex items-center">
+            <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
+            <button @click="removeName(nameEntry)"
+              class="bg-transparent text-grey-500 p-2 transition-colors rounded hover:text-red-500 hover:bg-gray-100">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5"
+                stroke="currentColor" class="w-6 h-6">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          </div>
+          <div class="flex flex-wrap items-center gap-1 text-xs text-gray-500">
+            Exclusions:
+            <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
+              <div
+                class="center relative inline-block select-none whitespace-nowrap rounded-lg bg-gray-100 py-1 px-1.5 text-xs leading-none"
+                data-dismissible="chip">
+                <div class="mr-4 h-3 leading-3" x-text="exclusion"></div>
+                <div
+                  class="absolute top-0.5 right-1 mx-px mt-[0.5px] w-max rounded-md transition-colors hover:bg-gray-400 hover:text-red-500"
+                  data-dismissible-target="chip">
+                  <div role="button" class="h-4 w-4 p-1" @click="removeExclusion(nameEntry, exclusion)">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                      stroke-width="3">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                   </div>
                 </div>
-              </template>
-            </div>
-          </div>
-        </template>
-        <!-- Input for a new name -->
-        <form @submit.prevent="addNewName()" class="flex">
-          <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..." class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
-          <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0" :class="{'opacity-50 cursor-not-allowed': newName.trim().length <= 0}">Add</button>
-        </form>
-      </div>
-      <div class="mt-2">
-        <button @click="assign()" class="bg-blue-500 text-white p-2 rounded" :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 2 || error)}">Assign</button>
-      </div>
-      <!-- Exclusion Dialog -->
-      <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center" @click="exclusionDialogVisible = false; $refs.nameInput.focus()">
-        <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
-          <div class="flex items-center mb-8">
-            <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
-          </div>
-          <div class="mb-8">
-            <template x-for="name in availableExclusions" :key="name">
-              <div class="flex items-center mb-2">
-                <input type="checkbox" :id="name" :value="name" x-model="currentExclusions" class="mr-2" />
-                <label :for="name" x-text="name"></label>
               </div>
             </template>
-          </div>
-          <div class="flex justify-end space-x-4">
-            <button @click="exclusionDialogVisible = false; $refs.nameInput.focus()" class="bg-transparent hover:bg-gray-100 p-2 rounded">Close</button>
-            <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Done</button>
+            <!-- <button @click="showExclusionDialog(nameEntry)"
+              class="bg-gray-100 hover:bg-gray-400 py-0.5 px-1.5 rounded-lg text-xs mr-5" title="Add Exclusion"> -->
+              <div role="button" class="h-5 w-5 p-1 rounded-md transition-colors bg-gray-100 hover:bg-gray-400" @click="showExclusionDialog(nameEntry)">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"
+                stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12M6 12h12"></path>
+              </svg>
+            </div>
+            <!-- </button> -->
           </div>
         </div>
-        <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
-      </div>
+      </template>
+      <!-- Input for a new name -->
+      <form @submit.prevent="addNewName()" class="flex">
+        <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..."
+          class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0"
+          :class="{'opacity-50 cursor-not-allowed': newName.trim().length <= 0}">Add</button>
+      </form>
     </div>
-    <!-- Link Panel -->
-    <div x-show="assignmentLink" class="mx-auto mt-4 max-w-lg px-4">
-      <div class="p-4 bg-white rounded shadow-lg">
-        <b><span class="mr-2 flex-grow">Assignment Link to Share:</span></b>
-        <div class="flex items-center">
-          <a class="mr-2 flex-grow truncate text-blue-500" :href="assignmentLink" target="_blank" x-text="assignmentLink" x-bind:href="assignmentLink" rel="noopener noreferrer"></a>
-          <button @click="copyToClipboard()" class="bg-transparent text-gray-500 p-2 rounded hover:bg-gray-100">Copy</button>
+    <div class="mt-2">
+      <button @click="assign()" class="bg-blue-500 text-white p-2 rounded"
+        :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 2 || error)}">Assign</button>
+    </div>
+    <!-- Exclusion Dialog -->
+    <div x-show="exclusionDialogVisible" class="fixed top-0 left-0 w-full h-full flex items-center justify-center"
+      @click="exclusionDialogVisible = false; $refs.nameInput.focus()">
+      <div class="bg-white p-6 rounded shadow-lg relative z-10 mx-4 md:mx-auto mt-20 md:mt-40 max-w-xl" @click.stop>
+        <div class="flex items-center mb-8">
+          <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
         </div>
-        <p x-show="showLinkCopiedMessage" x-transition:leave="transition ease-in duration-500" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-gray-500">link copied to clipboard!</p>
-      </div>
-    </div>
-    <!-- Resolution Panel -->
-    <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
-      <div class="p-4 bg-white rounded shadow-lg">
-        <template x-for="name in Object.keys(decodedAssignments)">
-          <div class="flex items-center mb-2">
-            <span class="mr-2 flex-grow" x-text="name"></span>
-            <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
-          </div>
-        </template>
-        <div x-show="selectedName" class="mt-2">
-          <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
+        <div class="mb-8">
+          <template x-for="name in availableExclusions" :key="name">
+            <div class="flex items-center mb-2">
+              <input type="checkbox" :id="name" :value="name" x-model="currentExclusions" class="mr-2" />
+              <label :for="name" x-text="name"></label>
+            </div>
+          </template>
+        </div>
+        <div class="flex justify-end space-x-4">
+          <button @click="exclusionDialogVisible = false; $refs.nameInput.focus()"
+            class="bg-transparent transition-colors hover:bg-gray-100 p-2 rounded">Close</button>
+          <button @click="saveExclusions()" class="bg-green-500 text-white p-2 rounded">Done</button>
         </div>
       </div>
-      <button @click="removeAssignmentsFromURL()" class="bg-blue-500 text-white p-2 rounded mt-4">New Assignment</button>
+      <div class="absolute top-0 left-0 w-full h-full bg-black opacity-50"></div>
     </div>
-  </body>
+  </div>
+  <!-- Link Panel -->
+  <div x-show="assignmentLink" class="mx-auto mt-4 max-w-lg px-4">
+    <div class="p-4 bg-white rounded shadow-lg">
+      <b><span class="mr-2 flex-grow">Assignment Link to Share:</span></b>
+      <div class="flex items-center">
+        <a class="mr-2 flex-grow truncate text-blue-500" :href="assignmentLink" target="_blank" x-text="assignmentLink"
+          x-bind:href="assignmentLink" rel="noopener noreferrer"></a>
+        <button @click="copyToClipboard()"
+          class="bg-transparent text-gray-500 p-2 rounded transition-colors hover:bg-gray-100">Copy</button>
+      </div>
+      <p x-show="showLinkCopiedMessage" x-transition:leave="transition ease-in duration-500"
+        x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0" class="text-gray-500">link copied to
+        clipboard!</p>
+    </div>
+  </div>
+  <!-- Resolution Panel -->
+  <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
+    <div class="p-4 bg-white rounded shadow-lg">
+      <template x-for="name in Object.keys(decodedAssignments)">
+        <div class="flex items-center mb-2">
+          <span class="mr-2 flex-grow" x-text="name"></span>
+          <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
+        </div>
+      </template>
+      <div x-show="selectedName" class="mt-2">
+        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
+      </div>
+    </div>
+    <button @click="removeAssignmentsFromURL()" class="bg-blue-500 text-white p-2 rounded mt-4">New Assignment</button>
+  </div>
+</body>
+
 </html>
