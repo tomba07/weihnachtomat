@@ -203,6 +203,7 @@ function nameApp() {
         this.removeExclusion(entry, nameEntry.name);
       });
       this.updateNameEntries();
+      this.$refs.nameInput.focus();
     },
 
     removeExclusion(nameEntry, exclusion) {
