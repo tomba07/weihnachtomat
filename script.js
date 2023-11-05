@@ -135,6 +135,8 @@ function nameApp() {
     updateNameEntries() {
       this.saveNameEntries();
       this.verifySingleOptions();
+      //Remove assignment link since no longer valid
+      this.assignmentLink = "";
     },
 
     isObjectEmpty(objectName) {
