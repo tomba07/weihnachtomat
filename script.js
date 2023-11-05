@@ -123,12 +123,17 @@ function nameApp() {
       localStorage.setItem("nameEntries", JSON.stringify(this.nameEntries));
     },
 
-    // Method to load nameEntries from localStorage
     loadNameEntries() {
-      const savedEntries = localStorage.getItem("nameEntries");
-      if (savedEntries) {
-        this.nameEntries = JSON.parse(savedEntries);
-        this.verifySingleOptions();
+      try {
+        const savedEntries = localStorage.getItem("nameEntries");
+
+        if (savedEntries) {
+          this.nameEntries = JSON.parse(savedEntries);
+          this.verifySingleOptions();
+        }
+      } catch (e) {
+        console.warn("Loading Name Entries Failed. Removing name entries from localStorage.")
+        localStorage.removeItem("nameEntries");
       }
     },
 
