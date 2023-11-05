@@ -151,6 +151,7 @@ function nameApp() {
     closeOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.exclusionDialogVisible = false;
+        this.assignmentLink = '';
         this.$refs.nameInput.focus();
       }
     },
@@ -166,6 +167,11 @@ function nameApp() {
         this.nameEntries.push({ name: name, exclusions: [] });
         this.newName = "";
       }
+
+      this.$nextTick(() => {
+        const namesList = document.getElementById('names-list');
+        namesList.scrollTop = namesList.scrollHeight;
+      });
 
       this.updateNameEntries();
     },
