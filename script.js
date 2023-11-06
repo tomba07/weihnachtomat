@@ -336,9 +336,9 @@ function nameApp() {
       this.error = "";
 
       if (totalGifts !== this.nameEntries.length) {
-        this.error = "Error: The total number of gifts does not match the number of participants.";
-        return; // Stop further checks because there is a fundamental error
-      }else if (!this.secretSanta()){
+        const giftCountDifference = Math.abs(totalGifts - this.nameEntries.length);
+        this.error = `Error: The total number of gifts (${totalGifts}) does not match the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
+      } else if (!this.secretSanta()) {
         this.error = "Error: Not everyone is assigned to receive a gift. Please check the number of gifts and exclusions.";
       } else {
         // Check for exclusions that only leave one option

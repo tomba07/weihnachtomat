@@ -68,7 +68,7 @@
             </div>
             <label class="text-xs text-gray-500 mt-1">
               Number of Gifts:
-              <input type="number" x-model.number="nameEntry.numberOfGifts" min="0" class="border rounded w-10 p-1" />
+              <input type="number" x-on:input="verifySingleOptions" x-model.number="nameEntry.numberOfGifts" min="0" class="border rounded w-10 p-1" />
             </label>
           </div>
         </template>
