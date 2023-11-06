@@ -5,19 +5,6 @@ class BipartiteGraph {
     this.dist = new Array(size).fill(-1);
   }
 
-  createWarnings = (participants) => {
-    let singleOptions = [];
-    let halfSize = this.adjList.length / 2;
-
-    for (let i = 0; i < halfSize; i++) {
-      if (this.adjList[i].length === 1) {
-        singleOptions.push(participants[i]);
-      }
-    }
-
-    return { singleOptions };
-  };
-
   addEdge(u, v) {
     if (u < 0 || u >= this.adjList.length || v < 0 || v >= this.adjList.length) {
       throw new Error("Edge indices are out of bounds.");
@@ -77,27 +64,6 @@ class BipartiteGraph {
       });
     }
     return matching;
-  }
-
-  getPairs(participants) {
-    let resultObj = {};
-    let half = participants.length;
-
-    // Since participants can have multiple pairs, we store them in an array
-    this.pair.slice(0, half).forEach((p, i) => {
-      if (p !== -1) {
-        const giverName = participants[Math.floor(i / 2)].name; // Divide by 2 because they can appear twice in the giver list
-        const receiverName = participants[p - half].name;
-
-        if (!resultObj[giverName]) {
-          resultObj[giverName] = [];
-        }
-
-        resultObj[giverName].push(receiverName);
-      }
-    });
-
-    return resultObj;
   }
 }
 
@@ -276,6 +242,12 @@ function nameApp() {
         }),
         shuffledNames = this.shuffleArray(clonedNames);
 
+      shuffledNames.forEach(entry => {
+        if (entry.exclusions.length === numberOfParticipants - 1) {
+          entry.numberOfGifts = 0;
+        }
+      });
+
       // Calculate the total number of gifts before adjustments
       let totalGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
@@ -286,10 +258,10 @@ function nameApp() {
 
         // Decrement the numberOfGifts for the entry with the highest number
         maxGiftsEntry.numberOfGifts--;
-
-        // Recalculate the total number of gifts
-        totalGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+        totalGifts--;
       }
+
+
 
       const graph = new BipartiteGraph(numberOfParticipants * 2);
 
@@ -351,6 +323,9 @@ function nameApp() {
     },
 
     verifyConfig() {
+      if (this.nameEntries.length < 3) {
+        return;
+      }
       const names = this.nameEntries.map((entry) => entry.name);
       const totalGifts = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
@@ -361,7 +336,7 @@ function nameApp() {
         const giftCountDifference = Math.abs(totalGifts - this.nameEntries.length);
         this.error = `Error: The total number of gifts (${totalGifts}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
       } else if (!this.secretSanta()) {
-        this.error = "Error: Not everyone is assigned to receive a gift. Please check the number of gifts and exclusions.";
+        this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
       } else {
         // Check for exclusions that only leave one option
         this.nameEntries.forEach((entry) => {
