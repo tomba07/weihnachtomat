@@ -83,9 +83,17 @@ class BipartiteGraph {
     let resultObj = {};
     let half = participants.length;
 
+    // Since participants can have multiple pairs, we store them in an array
     this.pair.slice(0, half).forEach((p, i) => {
       if (p !== -1) {
-        resultObj[participants[i]] = participants[p - half];
+        const giverName = participants[Math.floor(i / 2)].name; // Divide by 2 because they can appear twice in the giver list
+        const receiverName = participants[p - half].name;
+
+        if (!resultObj[giverName]) {
+          resultObj[giverName] = [];
+        }
+
+        resultObj[giverName].push(receiverName);
       }
     });
 
@@ -219,12 +227,7 @@ function nameApp() {
       if (this.nameEntries?.length < 2 || this.error) {
         return;
       }
-      const names = this.nameEntries.map((entry) => entry.name),
-        exclusions = this.nameEntries.reduce((acc, entry) => {
-          acc[entry.name] = entry.exclusions;
-          return acc;
-        }, {}),
-        assignmentsDict = this.secretSanta(names, exclusions);
+      const assignmentsDict = this.secretSanta();
 
       console.log(assignmentsDict);
 
@@ -251,24 +254,72 @@ function nameApp() {
         });
     },
 
-    secretSanta(participants, exclusionsObj) {
-      const graph = new BipartiteGraph(participants.length * 2);
+    shuffleArray(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+      return array;
+    },
 
-      // Shuffle the participants to randomize the results
-      participants.sort(() => (Math.random() > 0.5 ? 1 : -1));
+    secretSanta() {
+      // Calculate the total number of gifts to be given
+      const totalGifts = this.nameEntries.reduce((acc, entry) => acc + entry.numberOfGifts, 0),
+        shuffledNames = this.shuffleArray([...this.nameEntries]);
 
-      // Build the graph edges based on exclusions
-      for (let i = 0; i < participants.length; i++) {
-        for (let j = participants.length; j < participants.length * 2; j++) {
-          if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(participants[j - participants.length]))) {
-            graph.addEdge(i, j);
+      // Create a bipartite graph: the size should be the totalGifts for givers and nameEntries.length for receivers
+      const graph = new BipartiteGraph(totalGifts + this.nameEntries.length);
+
+      let giverIndex = 0; // This index will keep track of the position in the graph for each gift giver entry
+      // Build the graph edges based on numberOfGifts and exclusions
+      shuffledNames.forEach((giver, giverIdx) => {
+        for (let giftCount = 0; giftCount < giver.numberOfGifts; giftCount++) {
+          shuffledNames.forEach((receiver, receiverIdx) => {
+            // Ensure the giver is not giving a gift to themselves or to someone in their exclusions
+            if (giver.name !== receiver.name && !giver.exclusions.includes(receiver.name)) {
+              // Connect this instance of the giver to the receiver in the graph
+              graph.addEdge(giverIndex, totalGifts + receiverIdx);
+            }
+          });
+          giverIndex++;
+        }
+      });
+
+      // Run the Hopcroft-Karp algorithm to find the maximum matching
+      const matching = graph.hopcroftKarp();
+
+      // Check if the total matching is equal to the total number of gifts to be given
+      if (matching === totalGifts) {
+        // Retrieve and return the pairs
+        let pairs = {};
+        for (let i = 0; i < totalGifts; i++) {
+          if (graph.pair[i] !== -1) {
+            // The receiver's index is the pair's index minus the totalGifts offset
+            let receiverIndex = graph.pair[i] - totalGifts;
+            let receiverName = shuffledNames[receiverIndex].name;
+
+            // Find the giver's name by looking up which index range they fall into
+            let giverName = '';
+            let giftCounter = 0;
+            for (let giverEntry of shuffledNames) {
+              if (i >= giftCounter && i < giftCounter + giverEntry.numberOfGifts) {
+                giverName = giverEntry.name;
+                break;
+              }
+              giftCounter += giverEntry.numberOfGifts;
+            }
+
+            if (!pairs[giverName]) {
+              pairs[giverName] = [];
+            }
+            pairs[giverName].push(receiverName);
           }
         }
+        return pairs;
+      } else {
+        console.error('Not all participants can be matched with the given constraints.');
+        return null;
       }
-
-      const count = graph.hopcroftKarp();
-
-      return count === participants.length ? graph.getPairs(participants) : null;
     },
 
     removeAssignmentsFromURL() {
