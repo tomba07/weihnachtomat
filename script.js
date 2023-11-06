@@ -219,16 +219,7 @@ function nameApp() {
       if (this.nameEntries?.length < 2 || this.error) {
         return;
       }
-      const names = this.nameEntries.map((entry) => entry.name),
-        exclusions = this.nameEntries.reduce((acc, entry) => {
-          acc[entry.name] = entry.exclusions;
-          return acc;
-        }, {}),
-        numberOfGifts = this.nameEntries.reduce((acc, entry) => {
-          acc[entry.name] = entry.numberOfGifts;
-          return acc;
-        }, {}),
-        assignmentsDict = this.secretSanta(names, exclusions, numberOfGifts);
+      const assignmentsDict = this.secretSanta();
 
       console.log(assignmentsDict);
 
@@ -255,19 +246,39 @@ function nameApp() {
         });
     },
 
-    secretSanta(participants, exclusionsObj, numberOfGiftsObj) {
+    shuffle(array) {
+      for (let i = array.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [array[i], array[j]] = [array[j], array[i]];
+      }
+    },
+    
+    secretSanta() {
+      // Extract participant names, exclusions, and number of gifts from nameEntries
+      const participants = this.nameEntries.map(entry => entry.name);
+      const exclusionsObj = {};
+      const numberOfGiftsObj = {};
+    
+      this.nameEntries.forEach(entry => {
+        exclusionsObj[entry.name] = entry.exclusions;
+        numberOfGiftsObj[entry.name] = entry.numberOfGifts;
+      });
+    
+      // Shuffle the participants before starting the assignments
+      this.shuffle(participants);
+    
       // Find the maximum number of gifts any single participant will give
-      const maxGifts = Math.max(...Object.values(numberOfGiftsObj));
+      const maxGifts = Math.max(...participants.map(name => numberOfGiftsObj[name]));
       const allAssignments = {};
-
+    
       // Run the matching algorithm once for each gift round
       for (let round = 0; round < maxGifts; round++) {
         const graph = new BipartiteGraph(participants.length * 2);
         const roundAssignments = {};
-
+    
         // Build the graph edges based on exclusions and if they have gifts left to give
         for (let i = 0; i < participants.length; i++) {
-          if (numberOfGiftsObj[participants[i]] > round) { // Only add edges if the participant still has gifts to give
+          if (numberOfGiftsObj[participants[i]] > round) {
             for (let j = participants.length; j < participants.length * 2; j++) {
               const potentialReceiver = participants[j - participants.length];
               if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(potentialReceiver))) {
@@ -276,12 +287,11 @@ function nameApp() {
             }
           }
         }
-
-        const count = graph.hopcroftKarp();
-
+        graph.hopcroftKarp();
+    
         // Get the pairings for this round
         Object.assign(roundAssignments, graph.getPairs(participants));
-
+    
         // Add the round's assignments to the overall assignments, ensuring no participant is assigned more than once per round
         for (const giver in roundAssignments) {
           if (!allAssignments[giver]) {
@@ -290,7 +300,7 @@ function nameApp() {
           allAssignments[giver].push(roundAssignments[giver]);
         }
       }
-
+    
       return allAssignments;
     },
 
