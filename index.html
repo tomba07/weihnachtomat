@@ -132,14 +132,14 @@
       <template x-for="name in Object.keys(decodedAssignments)">
         <div class="flex items-center mb-2">
           <span class="mr-2 flex-grow" x-text="name"></span>
-          <button @click="selectedName = name" class="bg-blue-500 text-white p-2 rounded">Show</button>
+          <button @click="selectedName = name" class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded">Show</button>
         </div>
       </template>
       <div x-show="selectedName" class="mt-2">
         <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
       </div>
     </div>
-    <button @click="removeAssignmentsFromURL()" class="bg-blue-500 text-white p-2 rounded mt-4">New Assignment</button>
+    <button @click="removeAssignmentsFromURL()" class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded mt-4">New Assignment</button>
   </div>
 </body>
 
