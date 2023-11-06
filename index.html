@@ -14,6 +14,16 @@
 
 <body x-data="nameApp()" x-init="init()">
   <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto max-w-lg p-4 h-screen overflow-hidden">
+    <div class="flex justify-end gap-2 mb-2 text-gray-500">
+      <label class="flex items-center cursor-pointer text-xs">
+        <input type="checkbox" class="mr-1" x-model="showExclusions" />
+        <span>Show Exclusions</span>
+      </label>
+      <label class="flex items-center cursor-pointer text-xs">
+        <input type="checkbox" class="mr-1" x-model="showMaxGifts" />
+        <span>Show Max Number of Gifts</span>
+      </label>
+    </div>
     <div class="p-4 bg-white rounded shadow-lg max-h-full flex flex-col">
       <!-- Error label -->
       <div x-show="nameEntries.length > 2 && error" x-text="error"
@@ -37,7 +47,7 @@
                 </svg>
               </button>
             </div>
-            <div class="flex flex-wrap items-center gap-1 text-xs text-gray-500">
+            <div x-show="showExclusions" class="flex flex-wrap items-center gap-1 text-xs text-gray-500">
               Exclusions:
               <template x-for="exclusion in nameEntry.exclusions" :key="exclusion">
                 <div
@@ -66,7 +76,7 @@
                 </svg>
               </div>
             </div>
-            <label class="text-xs text-gray-500 mt-1">
+            <label x-show="showMaxGifts" class="text-xs text-gray-500 mt-1">
               Max. number of gifts:
               <input type="number" x-on:input="updateNameEntries" x-model.number="nameEntry.numberOfGifts" min="0"
                 class="border rounded w-10 p-1" />

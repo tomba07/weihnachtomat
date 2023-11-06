@@ -115,6 +115,8 @@ function nameApp() {
     showLinkCopiedMessage: false,
     error: "",
     warning: "",
+    showExclusions: false,
+    showMaxGifts: false,
 
     init() {
       this.loadNameEntries();
