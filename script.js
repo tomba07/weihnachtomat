@@ -164,7 +164,7 @@ function nameApp() {
       } else if (this.nameEntries.some((entry) => entry.name === name)) {
         alert("Please enter a unique name.");
       } else {
-        this.nameEntries.push({ name: name, exclusions: [] });
+        this.nameEntries.push({ name: name, exclusions: [], numberOfGifts: 1 });
         this.newName = "";
       }
 
