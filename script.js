@@ -236,7 +236,7 @@ function nameApp() {
       if (this.nameEntries?.length < 2 || this.error) {
         return;
       }
-      const assignmentsDict = this.secretSanta();
+      const assignmentsDict = this.secretSantaWithRetries();
 
       console.log(assignmentsDict);
 
@@ -261,6 +261,19 @@ function nameApp() {
         .catch((err) => {
           console.error("Could not copy text: ", err);
         });
+    },
+
+    secretSantaWithRetries(retries = 10) {
+      let assignment;
+      for (let attempt = 0; attempt < retries; attempt++) {
+        assignment = this.secretSanta();
+        if (assignment) {
+          break;
+        } else {
+          console.warn(`Attempt ${attempt + 1} failed. Retrying...`);
+        }
+      }
+      return assignment;
     },
 
     secretSanta() {
@@ -342,7 +355,6 @@ function nameApp() {
         }
         return pairs;
       } else {
-        console.error("Not all participants can be matched with the given constraints.");
         return null;
       }
     },
@@ -366,7 +378,7 @@ function nameApp() {
       if (totalGifts < this.nameEntries.length) {
         const giftCountDifference = Math.abs(totalGifts - this.nameEntries.length);
         this.error = `Error: The total number of gifts (${totalGifts}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
-      } else if (!this.secretSanta()) {
+      } else if (!this.secretSantaWithRetries()) {
         this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
       } else {
         // Check for exclusions that only leave one option
