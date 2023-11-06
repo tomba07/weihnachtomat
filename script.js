@@ -224,11 +224,7 @@ function nameApp() {
           acc[entry.name] = entry.exclusions;
           return acc;
         }, {}),
-        numberOfGifts = this.nameEntries.reduce((acc, entry) => {
-          acc[entry.name] = entry.numberOfGifts;
-          return acc;
-        }, {}),
-        assignmentsDict = this.secretSanta(names, exclusions, numberOfGifts);
+        assignmentsDict = this.secretSanta(names, exclusions);
 
       console.log(assignmentsDict);
 
@@ -255,43 +251,24 @@ function nameApp() {
         });
     },
 
-    secretSanta(participants, exclusionsObj, numberOfGiftsObj) {
-      // Find the maximum number of gifts any single participant will give
-      const maxGifts = Math.max(...Object.values(numberOfGiftsObj));
-      const allAssignments = {};
+    secretSanta(participants, exclusionsObj) {
+      const graph = new BipartiteGraph(participants.length * 2);
 
-      // Run the matching algorithm once for each gift round
-      for (let round = 0; round < maxGifts; round++) {
-        const graph = new BipartiteGraph(participants.length * 2);
-        const roundAssignments = {};
+      // Shuffle the participants to randomize the results
+      participants.sort(() => (Math.random() > 0.5 ? 1 : -1));
 
-        // Build the graph edges based on exclusions and if they have gifts left to give
-        for (let i = 0; i < participants.length; i++) {
-          if (numberOfGiftsObj[participants[i]] > round) { // Only add edges if the participant still has gifts to give
-            for (let j = participants.length; j < participants.length * 2; j++) {
-              const potentialReceiver = participants[j - participants.length];
-              if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(potentialReceiver))) {
-                graph.addEdge(i, j);
-              }
-            }
+      // Build the graph edges based on exclusions
+      for (let i = 0; i < participants.length; i++) {
+        for (let j = participants.length; j < participants.length * 2; j++) {
+          if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(participants[j - participants.length]))) {
+            graph.addEdge(i, j);
           }
-        }
-
-        const count = graph.hopcroftKarp();
-
-        // Get the pairings for this round
-        Object.assign(roundAssignments, graph.getPairs(participants));
-
-        // Add the round's assignments to the overall assignments, ensuring no participant is assigned more than once per round
-        for (const giver in roundAssignments) {
-          if (!allAssignments[giver]) {
-            allAssignments[giver] = [];
-          }
-          allAssignments[giver].push(roundAssignments[giver]);
         }
       }
 
-      return allAssignments;
+      const count = graph.hopcroftKarp();
+
+      return count === participants.length ? graph.getPairs(participants) : null;
     },
 
     removeAssignmentsFromURL() {
