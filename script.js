@@ -233,7 +233,7 @@ function nameApp() {
     },
 
     assign() {
-      if (this.nameEntries?.length < 2 || this.error) {
+      if (this.nameEntries?.length < 3 || this.error) {
         return;
       }
       const assignmentsDict = this.secretSantaWithRetries();
