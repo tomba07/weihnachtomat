@@ -137,7 +137,7 @@ function nameApp() {
 
         if (savedEntries) {
           this.nameEntries = JSON.parse(savedEntries);
-          this.verifySingleOptions();
+          this.verifyConfig();
         }
       } catch (e) {
         console.warn("Loading Name Entries Failed. Removing name entries from localStorage.")
@@ -147,7 +147,7 @@ function nameApp() {
 
     updateNameEntries() {
       this.saveNameEntries();
-      this.verifySingleOptions();
+      this.verifyConfig();
       //Remove assignment link since no longer valid
       this.assignmentLink = "";
     },
@@ -328,7 +328,7 @@ function nameApp() {
       window.location.href = url;
     },
 
-    verifySingleOptions() {
+    verifyConfig() {
       const names = this.nameEntries.map((entry) => entry.name);
       const totalGifts = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
