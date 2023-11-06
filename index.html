@@ -16,11 +16,11 @@
   <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto max-w-lg p-4 pt-2 h-screen overflow-hidden">
     <div class="flex justify-end gap-2 text-gray-500">
       <label class="flex items-center cursor-pointer text-xs">
-        <input type="checkbox" class="mr-1" x-model="showExclusions" />
+        <input type="checkbox" class="mr-1" x-model="showExclusions" x-on:change="saveSettings" />
         <span>Show Exclusions</span>
       </label>
       <label class="flex items-center cursor-pointer text-xs">
-        <input type="checkbox" class="mr-1" x-model="showMaxGifts" />
+        <input type="checkbox" class="mr-1" x-model="showMaxGifts" x-on:change="saveSettings" />
         <span>Show Max Number of Gifts</span>
       </label>
     </div>

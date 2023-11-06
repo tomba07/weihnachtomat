@@ -85,6 +85,7 @@ function nameApp() {
     showMaxGifts: false,
 
     init() {
+      this.loadSettings();
       this.loadNameEntries();
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
       this.$refs.nameInput.focus();
@@ -95,8 +96,30 @@ function nameApp() {
       }
     },
 
+    saveSettings() {
+      localStorage.setItem("appSettings", JSON.stringify({
+        showExclusions: this.showExclusions,
+        showMaxGifts: this.showMaxGifts
+      }));
+    },
+
     saveNameEntries() {
       localStorage.setItem("nameEntries", JSON.stringify(this.nameEntries));
+    },
+
+    loadSettings() {
+      try {
+        const savedSettings = localStorage.getItem("appSettings");
+
+        if (savedSettings) {
+          const settings = JSON.parse(savedSettings);
+          this.showExclusions = settings.showExclusions;
+          this.showMaxGifts = settings.showMaxGifts;
+        }
+      } catch (e) {
+        console.warn("Loading Settings Failed. Removing settings from localStorage.")
+        localStorage.removeItem("appSettings");
+      }
     },
 
     loadNameEntries() {
