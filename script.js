@@ -260,7 +260,6 @@ function nameApp() {
       // Build the graph edges based on exclusions
       for (let i = 0; i < participants.length; i++) {
         for (let j = participants.length; j < participants.length * 2; j++) {
-          // Ensure i and j-participants.length are not the same and not in each other's exclusion list
           if (i !== j - participants.length && !(exclusionsObj[participants[i]] && exclusionsObj[participants[i]].includes(participants[j - participants.length]))) {
             graph.addEdge(i, j);
           }
