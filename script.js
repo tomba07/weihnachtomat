@@ -205,7 +205,6 @@ function nameApp() {
       this.currentNameEntry.exclusions = [...this.currentExclusions];
       this.updateNameEntries();
       this.exclusionDialogVisible = false;
-      this.$refs.nameInput.focus();
     },
 
     removeName(nameEntry) {
@@ -220,7 +219,6 @@ function nameApp() {
         this.removeExclusion(entry, nameEntry.name);
       });
       this.updateNameEntries();
-      this.$refs.nameInput.focus();
     },
 
     removeExclusion(nameEntry, exclusion) {
