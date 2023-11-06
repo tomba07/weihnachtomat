@@ -66,14 +66,10 @@
                 </svg>
               </div>
             </div>
-            <div class="mt-2">
-              <label class="text-gray-700 text-sm font-bold mb-2">
-                Number of Gifts:
-                <input type="number" x-model.number="nameEntry.numberOfGifts" 
-                       class="shadow appearance-none border rounded py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" 
-                       min="0" placeholder="Number of Gifts" />
-              </label>
-            </div>
+            <label class="text-xs text-gray-500 mt-1">
+              Number of Gifts:
+              <input type="number" x-model.number="nameEntry.numberOfGifts" min="0" class="border rounded w-10 p-1" />
+            </label>
           </div>
         </template>
       </div>
@@ -140,14 +136,16 @@
       <template x-for="name in Object.keys(decodedAssignments)">
         <div class="flex items-center mb-2">
           <span class="mr-2 flex-grow" x-text="name"></span>
-          <button @click="selectedName = name" class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded">Show</button>
+          <button @click="selectedName = name"
+            class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded">Show</button>
         </div>
       </template>
       <div x-show="selectedName" class="mt-2">
         <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
       </div>
     </div>
-    <button @click="removeAssignmentsFromURL()" class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded mt-4">New Assignment</button>
+    <button @click="removeAssignmentsFromURL()"
+      class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded mt-4">New Assignment</button>
   </div>
 </body>
 

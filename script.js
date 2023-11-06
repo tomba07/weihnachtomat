@@ -329,36 +329,24 @@ function nameApp() {
     },
 
     verifySingleOptions() {
-      const names = this.nameEntries.map((entry) => entry.name),
-        exclusions = this.nameEntries.reduce((acc, entry) => {
-          acc[entry.name] = entry.exclusions;
-          return acc;
-        }, {});
+      const names = this.nameEntries.map((entry) => entry.name);
+      const totalGifts = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
-      const graph = new BipartiteGraph(names.length * 2);
+      this.warning = "";
+      this.error = "";
 
-      // Populate the graph with edges that are not excluded
-      names.forEach((name, i) => {
-        names.forEach((otherName, j) => {
-          if (i !== j && !(exclusions[name] && exclusions[name].includes(otherName))) {
-            graph.addEdge(i, names.length + j);
+      if (totalGifts !== this.nameEntries.length) {
+        this.error = "Error: The total number of gifts does not match the number of participants.";
+        return; // Stop further checks because there is a fundamental error
+      }else if (!this.secretSanta()){
+        this.error = "Error: Not everyone is assigned to receive a gift. Please check the number of gifts and exclusions.";
+      } else {
+        // Check for exclusions that only leave one option
+        this.nameEntries.forEach((entry) => {
+          if (entry.numberOfGifts > 0 && entry.exclusions.length === names.length - 2) {
+            this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
           }
         });
-      });
-
-      const maxMatching = graph.hopcroftKarp();
-      const warnings = graph.createWarnings(names);
-
-      // Reset error and warning messages before checking
-      this.error = "";
-      this.warning = "";
-
-      if (maxMatching !== names.length) {
-        // Error: not all names can be matched due to exclusions
-        this.error = "It's not possible to make a complete assignment with the current exclusions. Please review the exclusions.";
-      } else if (warnings.singleOptions.length > 0) {
-        // Warning: some participants have only one possible match
-        this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
       }
     }
   };
