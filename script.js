@@ -1,8 +1,22 @@
+function shuffleArray(array) {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+}
+
 class BipartiteGraph {
   constructor(size) {
     this.adjList = new Array(size).fill().map(() => []);
     this.pair = new Array(size).fill(-1);
     this.dist = new Array(size).fill(-1);
+  }
+
+  shuffleAdjList() {
+    this.adjList.forEach((edges) => {
+      shuffleArray(edges);
+    });
   }
 
   addEdge(u, v) {
@@ -55,6 +69,7 @@ class BipartiteGraph {
   }
 
   hopcroftKarp() {
+    this.shuffleAdjList();
     let matching = 0;
     while (this.bfs()) {
       this.pair.forEach((p, u) => {
@@ -97,10 +112,13 @@ function nameApp() {
     },
 
     saveSettings() {
-      localStorage.setItem("appSettings", JSON.stringify({
-        showExclusions: this.showExclusions,
-        showMaxGifts: this.showMaxGifts
-      }));
+      localStorage.setItem(
+        "appSettings",
+        JSON.stringify({
+          showExclusions: this.showExclusions,
+          showMaxGifts: this.showMaxGifts
+        })
+      );
     },
 
     saveNameEntries() {
@@ -117,7 +135,7 @@ function nameApp() {
           this.showMaxGifts = settings.showMaxGifts;
         }
       } catch (e) {
-        console.warn("Loading Settings Failed. Removing settings from localStorage.")
+        console.warn("Loading Settings Failed. Removing settings from localStorage.");
         localStorage.removeItem("appSettings");
       }
     },
@@ -131,7 +149,7 @@ function nameApp() {
           this.verifyConfig();
         }
       } catch (e) {
-        console.warn("Loading Name Entries Failed. Removing name entries from localStorage.")
+        console.warn("Loading Name Entries Failed. Removing name entries from localStorage.");
         localStorage.removeItem("nameEntries");
       }
     },
@@ -150,7 +168,7 @@ function nameApp() {
     closeOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.exclusionDialogVisible = false;
-        this.assignmentLink = '';
+        this.assignmentLink = "";
         this.$refs.nameInput.focus();
       }
     },
@@ -168,7 +186,7 @@ function nameApp() {
       }
 
       this.$nextTick(() => {
-        const namesList = document.getElementById('names-list');
+        const namesList = document.getElementById("names-list");
         namesList.scrollTop = namesList.scrollHeight;
         this.$refs.nameInput.focus();
       });
@@ -245,27 +263,19 @@ function nameApp() {
         });
     },
 
-    shuffleArray(array) {
-      for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-      }
-      return array;
-    },
-
     secretSanta() {
       const numberOfParticipants = this.nameEntries.length,
         //For some reason, cloning with Alpine JS does not work properly, so using this workaround
-        clonedNames = this.nameEntries.map(entry => {
+        clonedNames = this.nameEntries.map((entry) => {
           return {
             name: entry.name,
             numberOfGifts: entry.numberOfGifts,
             exclusions: entry.exclusions
-          }
+          };
         }),
-        shuffledNames = this.shuffleArray(clonedNames);
+        shuffledNames = shuffleArray(clonedNames);
 
-      shuffledNames.forEach(entry => {
+      shuffledNames.forEach((entry) => {
         if (entry.exclusions.length === numberOfParticipants - 1) {
           entry.numberOfGifts = 0;
         }
@@ -277,14 +287,12 @@ function nameApp() {
       // Reduce the numberOfGifts in a fair manner until totalGifts equals numberOfParticipants
       while (totalGifts > numberOfParticipants) {
         // Find the entry with the highest numberOfGifts
-        let maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts) ? prev : current);
+        let maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts ? prev : current));
 
         // Decrement the numberOfGifts for the entry with the highest number
         maxGiftsEntry.numberOfGifts--;
         totalGifts--;
       }
-
-
 
       const graph = new BipartiteGraph(numberOfParticipants * 2);
 
@@ -316,7 +324,7 @@ function nameApp() {
             let receiverName = shuffledNames[receiverIndex].name;
 
             // Find the giver's name by looking up which index range they fall into
-            let giverName = '';
+            let giverName = "";
             let giftCounter = 0;
             for (let giverEntry of shuffledNames) {
               if (i >= giftCounter && i < giftCounter + giverEntry.numberOfGifts) {
@@ -334,7 +342,7 @@ function nameApp() {
         }
         return pairs;
       } else {
-        console.error('Not all participants can be matched with the given constraints.');
+        console.error("Not all participants can be matched with the given constraints.");
         return null;
       }
     },
