@@ -263,12 +263,33 @@ function nameApp() {
     },
 
     secretSanta() {
-      // Calculate the total number of gifts to be given
-      const totalGifts = this.nameEntries.reduce((acc, entry) => acc + entry.numberOfGifts, 0),
-        shuffledNames = this.shuffleArray([...this.nameEntries]);
+      const numberOfParticipants = this.nameEntries.length,
+        //For some reason, cloning with Alpine JS does not work properly, so using this workaround
+        clonedNames = this.nameEntries.map(entry => {
+          return {
+            name: entry.name,
+            numberOfGifts: entry.numberOfGifts,
+            exclusions: entry.exclusions
+          }
+        }),
+        shuffledNames = this.shuffleArray(clonedNames);
 
-      // Create a bipartite graph: the size should be the totalGifts for givers and nameEntries.length for receivers
-      const graph = new BipartiteGraph(totalGifts + this.nameEntries.length);
+      // Calculate the total number of gifts before adjustments
+      let totalGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+
+      // Reduce the numberOfGifts in a fair manner until totalGifts equals numberOfParticipants
+      while (totalGifts > numberOfParticipants) {
+        // Find the entry with the highest numberOfGifts
+        let maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts) ? prev : current);
+
+        // Decrement the numberOfGifts for the entry with the highest number
+        maxGiftsEntry.numberOfGifts--;
+
+        // Recalculate the total number of gifts
+        totalGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+      }
+
+      const graph = new BipartiteGraph(numberOfParticipants * 2);
 
       let giverIndex = 0; // This index will keep track of the position in the graph for each gift giver entry
       // Build the graph edges based on numberOfGifts and exclusions
@@ -278,7 +299,7 @@ function nameApp() {
             // Ensure the giver is not giving a gift to themselves or to someone in their exclusions
             if (giver.name !== receiver.name && !giver.exclusions.includes(receiver.name)) {
               // Connect this instance of the giver to the receiver in the graph
-              graph.addEdge(giverIndex, totalGifts + receiverIdx);
+              graph.addEdge(giverIndex, numberOfParticipants + receiverIdx);
             }
           });
           giverIndex++;
@@ -288,14 +309,13 @@ function nameApp() {
       // Run the Hopcroft-Karp algorithm to find the maximum matching
       const matching = graph.hopcroftKarp();
 
-      // Check if the total matching is equal to the total number of gifts to be given
-      if (matching === totalGifts) {
+      if (matching === numberOfParticipants) {
         // Retrieve and return the pairs
         let pairs = {};
-        for (let i = 0; i < totalGifts; i++) {
+        for (let i = 0; i < numberOfParticipants; i++) {
           if (graph.pair[i] !== -1) {
             // The receiver's index is the pair's index minus the totalGifts offset
-            let receiverIndex = graph.pair[i] - totalGifts;
+            let receiverIndex = graph.pair[i] - numberOfParticipants;
             let receiverName = shuffledNames[receiverIndex].name;
 
             // Find the giver's name by looking up which index range they fall into
@@ -335,9 +355,9 @@ function nameApp() {
       this.warning = "";
       this.error = "";
 
-      if (totalGifts !== this.nameEntries.length) {
+      if (totalGifts < this.nameEntries.length) {
         const giftCountDifference = Math.abs(totalGifts - this.nameEntries.length);
-        this.error = `Error: The total number of gifts (${totalGifts}) does not match the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
+        this.error = `Error: The total number of gifts (${totalGifts}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
       } else if (!this.secretSanta()) {
         this.error = "Error: Not everyone is assigned to receive a gift. Please check the number of gifts and exclusions.";
       } else {
