@@ -6,60 +6,64 @@ function shuffleArray(array) {
   return array;
 }
 
-class BipartiteGraph {
-  constructor(size) {
-    this.adjList = new Array(size).fill().map(() => []);
-    this.pair = new Array(size).fill(-1);
-    this.dist = new Array(size).fill(-1);
+class SecretSantaMatcher {
+  constructor(givers, receivers) {
+    const participantsCount = givers.length + receivers.length;
+
+    this.givers = givers;
+    this.receivers = receivers;
+    this.participantConnections = new Array(participantsCount).fill().map(() => []);
+    this.secretSantaPair = new Array(participantsCount).fill(-1);
+    this.searchDistance = new Array(participantsCount).fill(-1);
   }
 
-  shuffleAdjList() {
-    this.adjList.forEach((edges) => {
+  shuffleParticipantConnections() {
+    this.participantConnections.forEach((edges) => {
       shuffleArray(edges);
     });
   }
 
-  addEdge(u, v) {
-    if (u < 0 || u >= this.adjList.length || v < 0 || v >= this.adjList.length) {
-      throw new Error("Edge indices are out of bounds.");
+  addSecretSantaPairing(giver, receiver) {
+    if (giver < 0 || giver >= this.participantConnections.length || receiver < 0 || receiver >= this.participantConnections.length) {
+      throw new Error("Participant indices are out of bounds.");
     }
-    this.adjList[u].push(v);
+    this.participantConnections[giver].push(receiver);
   }
 
-  bfs() {
-    this.dist.fill(Infinity);
+  initializeSearchLayer() {
+    this.searchDistance.fill(Infinity);
     let queue = [];
 
-    this.pair.map((p, u) => {
-      if (p === -1) {
-        this.dist[u] = 0;
-        queue.push(u);
+    this.secretSantaPair.forEach((pairedParticipant, participant) => {
+      if (pairedParticipant === -1) {
+        this.searchDistance[participant] = 0;
+        queue.push(participant);
       }
     });
 
-    this.dist[-1] = Infinity;
+    this.searchDistance[-1] = Infinity;
 
     while (queue.length > 0) {
-      let u = queue.shift();
-      if (u !== -1) {
-        this.adjList[u].forEach((v) => {
-          if (this.dist[this.pair[v]] === Infinity) {
-            this.dist[this.pair[v]] = this.dist[u] + 1;
-            queue.push(this.pair[v]);
+      let currentParticipant = queue.shift();
+      if (currentParticipant !== -1) {
+        this.participantConnections[currentParticipant].forEach((possiblePair) => {
+          if (this.searchDistance[this.secretSantaPair[possiblePair]] === Infinity) {
+            this.searchDistance[this.secretSantaPair[possiblePair]] = this.searchDistance[currentParticipant] + 1;
+            queue.push(this.secretSantaPair[possiblePair]);
           }
         });
       }
     }
-    return this.dist[-1] !== Infinity;
+    return this.searchDistance[-1] !== Infinity;
   }
 
-  dfs(u) {
-    if (u !== -1) {
-      return this.adjList[u].some((v) => {
-        if (this.dist[this.pair[v]] === this.dist[u] + 1) {
-          if (this.dfs(this.pair[v])) {
-            this.pair[v] = u;
-            this.pair[u] = v;
+  attemptAssignment(participant) {
+    if (participant !== -1) {
+      return this.participantConnections[participant].some((potentialPair) => {
+        if (this.searchDistance[this.secretSantaPair[potentialPair]] === this.searchDistance[participant] + 1) {
+          if (this.attemptAssignment(this.secretSantaPair[potentialPair])) {
+            this.secretSantaPair[potentialPair] = participant;
+            this.secretSantaPair[participant] = potentialPair;
             return true;
           }
         }
@@ -68,17 +72,34 @@ class BipartiteGraph {
     return true;
   }
 
-  hopcroftKarp() {
-    this.shuffleAdjList();
-    let matching = 0;
-    while (this.bfs()) {
-      this.pair.forEach((p, u) => {
-        if (p === -1 && this.dfs(u)) {
-          matching++;
+  generateSecretSantaPairs() {
+    this.shuffleParticipantConnections();
+    const numberOfGivers = this.givers.length;
+    let totalPairs = 0;
+
+    while (this.initializeSearchLayer()) {
+      this.secretSantaPair.forEach((pairedParticipant, participant) => {
+        if (pairedParticipant === -1 && this.attemptAssignment(participant)) {
+          totalPairs++;
         }
       });
     }
-    return matching;
+    // Retrieve and return the pairs
+    let pairs = {};
+    for (let i = 0; i < numberOfGivers; i++) {
+      if (this.secretSantaPair[i] !== -1) {
+        let receiverIndex = this.secretSantaPair[i] - numberOfGivers;
+        let receiverName = this.receivers[receiverIndex];
+        let giverName = this.givers[i];
+
+        if (!pairs[giverName]) {
+          pairs[giverName] = [];
+        }
+        pairs[giverName].push(receiverName);
+      }
+    }
+    return pairs;
+
   }
 }
 
@@ -305,17 +326,25 @@ function nameApp() {
         totalGifts--;
       }
 
-      const graph = new BipartiteGraph(numberOfParticipants * 2);
+      const givers = shuffledNames.reduce((prev, curr) => {
+        for (let i = 0; i < curr.numberOfGifts; i++) {
+          prev.push(curr.name)
+        }
+
+        return prev;
+      }, []),
+        receivers = shuffledNames.map(entry => entry.name),
+        graph = new SecretSantaMatcher(givers, receivers);
 
       let giverIndex = 0; // This index will keep track of the position in the graph for each gift giver entry
       // Build the graph edges based on numberOfGifts and exclusions
-      shuffledNames.forEach((giver, giverIdx) => {
+      shuffledNames.forEach((giver) => {
         for (let giftCount = 0; giftCount < giver.numberOfGifts; giftCount++) {
           shuffledNames.forEach((receiver, receiverIdx) => {
             // Ensure the giver is not giving a gift to themselves or to someone in their exclusions
             if (giver.name !== receiver.name && !giver.exclusions.includes(receiver.name)) {
               // Connect this instance of the giver to the receiver in the graph
-              graph.addEdge(giverIndex, numberOfParticipants + receiverIdx);
+              graph.addSecretSantaPairing(giverIndex, numberOfParticipants + receiverIdx);
             }
           });
           giverIndex++;
@@ -323,38 +352,7 @@ function nameApp() {
       });
 
       // Run the Hopcroft-Karp algorithm to find the maximum matching
-      const matching = graph.hopcroftKarp();
-
-      if (matching === numberOfParticipants) {
-        // Retrieve and return the pairs
-        let pairs = {};
-        for (let i = 0; i < numberOfParticipants; i++) {
-          if (graph.pair[i] !== -1) {
-            // The receiver's index is the pair's index minus the totalGifts offset
-            let receiverIndex = graph.pair[i] - numberOfParticipants;
-            let receiverName = shuffledNames[receiverIndex].name;
-
-            // Find the giver's name by looking up which index range they fall into
-            let giverName = "";
-            let giftCounter = 0;
-            for (let giverEntry of shuffledNames) {
-              if (i >= giftCounter && i < giftCounter + giverEntry.numberOfGifts) {
-                giverName = giverEntry.name;
-                break;
-              }
-              giftCounter += giverEntry.numberOfGifts;
-            }
-
-            if (!pairs[giverName]) {
-              pairs[giverName] = [];
-            }
-            pairs[giverName].push(receiverName);
-          }
-        }
-        return pairs;
-      } else {
-        return null;
-      }
+      return graph.generateSecretSantaPairs();
     },
 
     removeAssignmentsFromURL() {
