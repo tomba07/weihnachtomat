@@ -255,7 +255,7 @@ function nameApp() {
       if (this.nameEntries?.length < 3 || this.error) {
         return;
       }
-      const assignmentsDict = this.secretSantaWithRetries();
+      const assignmentsDict = this.secretSanta();
 
       console.log(assignmentsDict);
 
@@ -282,19 +282,6 @@ function nameApp() {
         });
     },
 
-    secretSantaWithRetries(retries = 10) {
-      let assignment;
-      for (let attempt = 0; attempt < retries; attempt++) {
-        assignment = this.secretSanta();
-        if (assignment) {
-          break;
-        } else {
-          console.warn(`Attempt ${attempt + 1} failed. Retrying...`);
-        }
-      }
-      return assignment;
-    },
-
     getNameEntriesClone() {
       return this.nameEntries.map((entry) => {
         return {
@@ -306,22 +293,14 @@ function nameApp() {
     },
 
     getGivers(nameInfo) {
-      const numberOfNames = nameInfo.length;
-
       //Return an array of givers. If someone gives x gifts, he will be duplicated x times
       return nameInfo.reduce((prev, curr) => {
-        if (curr.exclusions.length < numberOfNames - 1) {
-          for (let i = 0; i < curr.numberOfGifts; i++) {
-            prev.push(curr.name)
-          }
+        for (let i = 0; i < curr.numberOfGifts; i++) {
+          prev.push(curr.name)
         }
 
         return prev;
       }, [])
-    },
-
-    getNumbersOfGiftsOffered(nameInfos) {
-
     },
 
     secretSanta() {
@@ -333,13 +312,6 @@ function nameApp() {
           prev[curr.name] = curr.exclusions;
           return prev;
         }, {});
-
-      // treat people with only exclusions like numberOfGifts 0
-      shuffledNames.forEach((entry) => {
-        if (entry.exclusions.length === numberOfParticipants - 1) {
-          entry.numberOfGifts = 0;
-        }
-      });
 
       let offeredGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
@@ -378,14 +350,7 @@ function nameApp() {
         return;
       }
       const names = this.nameEntries.map((entry) => entry.name),
-        numberOfParticipants = names.length,
-        giftsOffered = this.nameEntries.reduce((sum, entry) => {
-          if (entry.exclusions.length < numberOfParticipants - 1) {
-            sum += entry.numberOfGifts
-          }
-
-          return sum;
-        }, 0);
+        giftsOffered = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
       this.warning = "";
       this.error = "";
@@ -393,7 +358,7 @@ function nameApp() {
       if (giftsOffered < this.nameEntries.length) {
         const giftCountDifference = Math.abs(giftsOffered - this.nameEntries.length);
         this.error = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
-      } else if (!this.secretSantaWithRetries()) {
+      } else if (!this.secretSanta()) {
         this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
       } else {
         // Check for exclusions that only leave one option
