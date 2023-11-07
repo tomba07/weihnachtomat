@@ -8,7 +8,7 @@ function shuffleArray(array) {
 
 class SecretSantaMatcher {
   constructor(givers, receivers) {
-    const participantsCount = receivers.length * 2;
+    const participantsCount = givers.length + receivers.length;
 
     this.givers = givers;
     this.receivers = receivers;
@@ -73,9 +73,10 @@ class SecretSantaMatcher {
   }
 
   generateSecretSantaPairs() {
-    this.shuffleParticipantConnections();
     const numberOfGivers = this.givers.length;
     let totalPairs = 0;
+
+    this.shuffleParticipantConnections();
 
     while (this.initializeSearchLayer()) {
       this.secretSantaPair.forEach((pairedParticipant, participant) => {
@@ -85,12 +86,13 @@ class SecretSantaMatcher {
       });
     }
     // Retrieve and return the pairs
-    let pairs = {};
+    const pairs = {};
+
     for (let i = 0; i < numberOfGivers; i++) {
       if (this.secretSantaPair[i] !== -1) {
-        let receiverIndex = this.secretSantaPair[i] - numberOfGivers;
-        let receiverName = this.receivers[receiverIndex];
-        let giverName = this.givers[i];
+        const receiverIndex = this.secretSantaPair[i] - numberOfGivers,
+          receiverName = this.receivers[receiverIndex],
+          giverName = this.givers[i];
 
         if (!pairs[giverName]) {
           pairs[giverName] = [];
@@ -99,7 +101,6 @@ class SecretSantaMatcher {
       }
     }
     return pairs;
-
   }
 }
 
@@ -189,7 +190,6 @@ function nameApp() {
     closeOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.exclusionDialogVisible = false;
-        this.assignmentLink = "";
         this.$refs.nameInput.focus();
       }
     },
@@ -229,13 +229,7 @@ function nameApp() {
     },
 
     removeName(nameEntry) {
-      const index = this.nameEntries.indexOf(nameEntry);
-
-      if (index > -1) {
-        this.nameEntries.splice(index, 1);
-      }
-      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter(Boolean);
-      //remove name from exclusions
+      this.nameEntries.splice(this.nameEntries.indexOf(nameEntry), 1);
       this.nameEntries.forEach((entry) => {
         this.removeExclusion(entry, nameEntry.name);
       });
@@ -252,20 +246,16 @@ function nameApp() {
     },
 
     assign() {
-      if (this.nameEntries?.length < 3 || this.error) {
-        return;
-      }
       const assignmentsDict = this.secretSanta();
 
       console.log(assignmentsDict);
 
       if (!assignmentsDict) {
         alert("No assignment could be made!");
-        return;
+      } else {
+        const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
+        this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
       }
-      // Encode the assignments to Base64
-      const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
-      this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
     },
 
     copyToClipboard() {
@@ -350,23 +340,36 @@ function nameApp() {
         return;
       }
       const names = this.nameEntries.map((entry) => entry.name),
-        giftsOffered = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+        giftsOffered = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0),
+        numberOfParticipants = this.nameEntries.length;
 
       this.warning = "";
       this.error = "";
 
-      if (giftsOffered < this.nameEntries.length) {
-        const giftCountDifference = Math.abs(giftsOffered - this.nameEntries.length);
-        this.error = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
-      } else if (!this.secretSanta()) {
-        this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
+      if (giftsOffered < numberOfParticipants) {
+        const giftCountDifference = Math.abs(giftsOffered - numberOfParticipants);
+
+        this.error = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${numberOfParticipants}). Difference: ${giftCountDifference}.`;
       } else {
-        // Check for exclusions that only leave one option
-        this.nameEntries.forEach((entry) => {
-          if (entry.numberOfGifts > 0 && entry.exclusions.length === names.length - 2) {
-            this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
-          }
-        });
+        const testResult = this.secretSanta() || {};
+        let recipientCount = 0;
+
+        for (let key in testResult) {
+          // Add the array length to the counter
+          recipientCount += testResult[key].length;
+        }
+
+        if (recipientCount < numberOfParticipants) {
+          this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
+        } else {
+          // Check for exclusions that only leave one option
+          this.nameEntries.forEach((entry) => {
+            if (entry.numberOfGifts > 0 && entry.exclusions.length === names.length - 2) {
+              this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
+            }
+          });
+
+        }
       }
     }
   };

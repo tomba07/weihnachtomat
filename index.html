@@ -94,6 +94,7 @@
 
       <div class="mt-2">
         <button @click="assign()" class="bg-blue-500 text-white p-2 rounded"
+          :disabled="nameEntries.length < 3 || error"
           :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 3 || error)}">Assign</button>
       </div>
     </div>
