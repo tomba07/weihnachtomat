@@ -8,7 +8,7 @@ function shuffleArray(array) {
 
 class SecretSantaMatcher {
   constructor(givers, receivers) {
-    const participantsCount = givers.length + receivers.length;
+    const participantsCount = receivers.length * 2;
 
     this.givers = givers;
     this.receivers = receivers;
@@ -295,63 +295,75 @@ function nameApp() {
       return assignment;
     },
 
+    getNameEntriesClone() {
+      return this.nameEntries.map((entry) => {
+        return {
+          name: entry.name,
+          numberOfGifts: entry.numberOfGifts,
+          exclusions: entry.exclusions
+        };
+      });
+    },
+
+    getGivers(nameInfo) {
+      const numberOfNames = nameInfo.length;
+
+      //Return an array of givers. If someone gives x gifts, he will be duplicated x times
+      return nameInfo.reduce((prev, curr) => {
+        if (curr.exclusions.length < numberOfNames - 1) {
+          for (let i = 0; i < curr.numberOfGifts; i++) {
+            prev.push(curr.name)
+          }
+        }
+
+        return prev;
+      }, [])
+    },
+
+    getNumbersOfGiftsOffered(nameInfos) {
+
+    },
+
     secretSanta() {
       const numberOfParticipants = this.nameEntries.length,
         //For some reason, cloning with Alpine JS does not work properly, so using this workaround
-        clonedNames = this.nameEntries.map((entry) => {
-          return {
-            name: entry.name,
-            numberOfGifts: entry.numberOfGifts,
-            exclusions: entry.exclusions
-          };
-        }),
-        shuffledNames = shuffleArray(clonedNames);
+        clonedNames = this.getNameEntriesClone(),
+        shuffledNames = shuffleArray(clonedNames),
+        exclusionsByName = this.nameEntries.reduce((prev, curr) => {
+          prev[curr.name] = curr.exclusions;
+          return prev;
+        }, {});
 
+      // treat people with only exclusions like numberOfGifts 0
       shuffledNames.forEach((entry) => {
         if (entry.exclusions.length === numberOfParticipants - 1) {
           entry.numberOfGifts = 0;
         }
       });
 
-      // Calculate the total number of gifts before adjustments
-      let totalGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+      let offeredGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
 
       // Reduce the numberOfGifts in a fair manner until totalGifts equals numberOfParticipants
-      while (totalGifts > numberOfParticipants) {
-        // Find the entry with the highest numberOfGifts
-        let maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts ? prev : current));
+      while (offeredGifts > numberOfParticipants) {
+        const maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts ? prev : current));
 
-        // Decrement the numberOfGifts for the entry with the highest number
         maxGiftsEntry.numberOfGifts--;
-        totalGifts--;
+        offeredGifts--;
       }
 
-      const givers = shuffledNames.reduce((prev, curr) => {
-        for (let i = 0; i < curr.numberOfGifts; i++) {
-          prev.push(curr.name)
-        }
-
-        return prev;
-      }, []),
+      const givers = this.getGivers(shuffledNames),
         receivers = shuffledNames.map(entry => entry.name),
         graph = new SecretSantaMatcher(givers, receivers);
 
-      let giverIndex = 0; // This index will keep track of the position in the graph for each gift giver entry
-      // Build the graph edges based on numberOfGifts and exclusions
-      shuffledNames.forEach((giver) => {
-        for (let giftCount = 0; giftCount < giver.numberOfGifts; giftCount++) {
-          shuffledNames.forEach((receiver, receiverIdx) => {
-            // Ensure the giver is not giving a gift to themselves or to someone in their exclusions
-            if (giver.name !== receiver.name && !giver.exclusions.includes(receiver.name)) {
-              // Connect this instance of the giver to the receiver in the graph
-              graph.addSecretSantaPairing(giverIndex, numberOfParticipants + receiverIdx);
-            }
-          });
-          giverIndex++;
-        }
+      // Build the graph edges based on exclusions
+      givers.forEach((giver, giverIndex) => {
+        receivers.forEach((receiver, receiverIndex) => {
+          if (giver !== receiver && !exclusionsByName[giver].includes(receiver)) {
+            graph.addSecretSantaPairing(giverIndex, numberOfParticipants + receiverIndex);
+          }
+        });
       });
 
-      // Run the Hopcroft-Karp algorithm to find the maximum matching
       return graph.generateSecretSantaPairs();
     },
 
@@ -365,15 +377,22 @@ function nameApp() {
       if (this.nameEntries.length < 3) {
         return;
       }
-      const names = this.nameEntries.map((entry) => entry.name);
-      const totalGifts = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
+      const names = this.nameEntries.map((entry) => entry.name),
+        numberOfParticipants = names.length,
+        giftsOffered = this.nameEntries.reduce((sum, entry) => {
+          if (entry.exclusions.length < numberOfParticipants - 1) {
+            sum += entry.numberOfGifts
+          }
+
+          return sum;
+        }, 0);
 
       this.warning = "";
       this.error = "";
 
-      if (totalGifts < this.nameEntries.length) {
-        const giftCountDifference = Math.abs(totalGifts - this.nameEntries.length);
-        this.error = `Error: The total number of gifts (${totalGifts}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
+      if (giftsOffered < this.nameEntries.length) {
+        const giftCountDifference = Math.abs(giftsOffered - this.nameEntries.length);
+        this.error = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${this.nameEntries.length}). Difference: ${giftCountDifference}.`;
       } else if (!this.secretSantaWithRetries()) {
         this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
       } else {
