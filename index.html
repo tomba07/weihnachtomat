@@ -136,6 +136,9 @@
         <button @click="exclusionDialogVisible = false; $refs.nameInput.focus()"
           class="bg-transparent transition-colors hover:bg-gray-100 p-2 rounded">Cancel</button>
         <button @click="saveExclusions()"
+          :disabled="currentExclusions.length >= nameEntries.length - 1"
+          :title="currentExclusions.length >= nameEntries.length - 1 ? 'You can not exclude everyone' : ''"
+          :class="{'opacity-50 cursor-not-allowed': currentExclusions.length >= nameEntries.length - 1}"
           class="transition-colors bg-green-500 hover:bg-green-600 text-white p-2 rounded">Done</button>
       </div>
     </div>
