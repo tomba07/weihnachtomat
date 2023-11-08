@@ -1,4 +1,4 @@
-function nameApp() {
+function secretSantaApp() {
   return {
     //General
     participants: [],
@@ -141,89 +141,22 @@ function nameApp() {
     },
 
     assign() {
-      const assignmentsDict = this.secretSanta();
+      const assignment = secretSanta(this.participants);
 
-      console.log(assignmentsDict);
+      console.log(assignment);
 
-      if (!assignmentsDict) {
+      if (!assignment) {
         alert("No assignment could be made!");
       } else {
-        const encodedAssignments = btoa(JSON.stringify(assignmentsDict));
+        const encodedAssignments = btoa(JSON.stringify(assignment));
         this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
       }
     },
 
-    secretSanta() {
-      const numberOfParticipants = this.participants.length,
-        //For some reason, cloning with Alpine JS does not work properly, so using this workaround
-        clonedNames = getParticipantsClone(this.participants),
-        shuffledNames = shuffleArray(clonedNames),
-        exclusionsByName = this.participants.reduce((prev, curr) => {
-          prev[curr.name] = curr.exclusions;
-          return prev;
-        }, {});
-
-      let offeredGifts = shuffledNames.reduce((sum, entry) => sum + entry.numberOfGifts, 0);
-
-      // Reduce the numberOfGifts in a fair manner until totalGifts equals numberOfParticipants
-      while (offeredGifts > numberOfParticipants) {
-        const maxGiftsEntry = shuffledNames.reduce((prev, current) => (prev.numberOfGifts > current.numberOfGifts ? prev : current));
-
-        maxGiftsEntry.numberOfGifts--;
-        offeredGifts--;
-      }
-
-      const givers = getGivers(shuffledNames),
-        receivers = shuffledNames.map(entry => entry.name),
-        graph = new SecretSantaMatcher(givers, receivers);
-
-      // Build the graph edges based on exclusions
-      givers.forEach((giver, giverIndex) => {
-        receivers.forEach((receiver, receiverIndex) => {
-          if (giver !== receiver && !exclusionsByName[giver].includes(receiver)) {
-            graph.addSecretSantaPairing(giverIndex, numberOfParticipants + receiverIndex);
-          }
-        });
-      });
-
-      return graph.generateSecretSantaPairs();
-    },
-
     verifyConfig() {
-      if (this.participants.length < 3) {
-        return;
-      }
-      const names = this.participants.map((entry) => entry.name),
-        giftsOffered = this.participants.reduce((sum, entry) => sum + entry.numberOfGifts, 0),
-        numberOfParticipants = this.participants.length;
-
-      this.warningMessage = "";
-      this.errorMessage = "";
-
-      if (giftsOffered < numberOfParticipants) {
-        const giftCountDifference = Math.abs(giftsOffered - numberOfParticipants);
-
-        this.errorMessage = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${numberOfParticipants}). Difference: ${giftCountDifference}.`;
-      } else {
-        const testResult = this.secretSanta() || {};
-        let recipientCount = 0;
-
-        for (let key in testResult) {
-          // Add the array length to the counter
-          recipientCount += testResult[key].length;
-        }
-
-        if (recipientCount < numberOfParticipants) {
-          this.errorMessage = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
-        } else {
-          // Check for exclusions that only leave one option
-          this.participants.forEach((entry) => {
-            if (entry.numberOfGifts > 0 && entry.exclusions.length === names.length - 2) {
-              this.warningMessage = "Warning: Some participants have only one possible match. This can lead to predictable results.";
-            }
-          });
-        }
-      }
+      const messages = getMessagesForConfig(this.participants);
+      this.errorMessage = messages.error;
+      this.warningMessage = messages.warning;
     },
 
     copyToClipboard() {
