@@ -15,8 +15,8 @@
 </head>
 
 <body x-data="secretSantaApp()" x-init="init()">
-  <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto max-w-lg p-4 pt-2 h-screen overflow-hidden">
-    <div class="p-4 pt-2 bg-white rounded shadow-lg max-h-full flex flex-col">
+  <div x-show="isObjectEmpty(decodedAssignments)" class="mx-auto max-w-lg p-4 pt-2 h-screen">
+    <div class="p-4 pt-2 bg-white rounded shadow-lg flex flex-col max-h-full">
       <div class="flex justify-end gap-2 text-gray-500">
         <label class="flex items-center cursor-pointer text-xs">
           <input type="checkbox" class="mr-1" x-model="showExclusions" x-on:change="saveSettings" />
