@@ -28,16 +28,16 @@
         </label>
       </div>
       <!-- Error label -->
-      <div x-show="nameEntries.length > 2 && error" x-text="error"
+      <div x-show="participants.length > 2 && errorMessage" x-text="errorMessage"
         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"></div>
 
       <!-- Warning label -->
-      <div x-show="nameEntries.length > 2 && warning" x-text="warning"
+      <div x-show="participants.length > 2 && warningMessage" x-text="warningMessage"
         class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert"></div>
 
       <!-- List of entered names -->
       <div id="names-list" class="flex-grow overflow-auto  mb-2">
-        <template x-for="nameEntry in nameEntries" :key="nameEntry.name">
+        <template x-for="nameEntry in participants" :key="nameEntry.name">
           <div class="flex flex-col pt-2 pb-2 border-b border-gray-50">
             <div class="flex items-center">
               <span class="mr-2 flex-grow" x-text="nameEntry.name"></span>
@@ -80,7 +80,7 @@
             </div>
             <label x-show="showMaxGifts" class="text-xs text-gray-500 mt-1">
               Max. number of gifts:
-              <input type="number" x-on:input="updateNameEntries" x-model.number="nameEntry.numberOfGifts" min="0"
+              <input type="number" x-on:input="updateParticipants" x-model.number="nameEntry.numberOfGifts" min="0"
                 class="border rounded w-10 p-1" />
             </label>
           </div>
@@ -88,16 +88,16 @@
       </div>
       <!-- Input for a new name -->
       <form @submit.prevent="addNewName()" class="flex">
-        <input type="text" x-ref="nameInput" x-model="newName" placeholder="Enter a name..."
+        <input type="text" x-ref="nameInput" x-model="nameInputValue" placeholder="Enter a name..."
           class="border p-2 rounded mr-2 flex-grow" maxlength="50" />
-        <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="newName.length <= 0"
-          :class="{'opacity-50 cursor-not-allowed': newName.trim().length <= 0}">Add</button>
+        <button type="submit" class="bg-blue-500 text-white p-2 rounded" :disabled="nameInputValue.length <= 0"
+          :class="{'opacity-50 cursor-not-allowed': nameInputValue.trim().length <= 0}">Add</button>
       </form>
 
       <div class="mt-2">
         <button @click="assign()" class="bg-blue-500 text-white p-2 rounded"
-          :disabled="nameEntries.length < 3 || error?.length > 0"
-          :class="{'opacity-50 cursor-not-allowed': (nameEntries.length < 3 || error)}">Assign</button>
+          :disabled="participants.length < 3 || errorMessage?.length > 0"
+          :class="{'opacity-50 cursor-not-allowed': (participants.length < 3 || errorMessage)}">Assign</button>
       </div>
     </div>
   </div>
@@ -128,9 +128,9 @@
         <h3 class="text-xl flex-grow mr-8">Select Exclusions</h3>
       </div>
       <div class="mb-8">
-        <template x-for="name in availableExclusions" :key="name">
+        <template x-for="name in dialogExclusionOptions" :key="name">
           <label class="flex items-center mb-2 cursor-pointer">
-            <input type="checkbox" :id="name" :value="name" x-model="currentExclusions" class="mr-2" />
+            <input type="checkbox" :id="name" :value="name" x-model="dialogSelectedExclusions" class="mr-2" />
             <span x-text="name"></span>
           </label>
         </template>
@@ -139,9 +139,9 @@
         <button @click="exclusionDialogVisible = false; $refs.nameInput.focus()"
           class="bg-transparent transition-colors hover:bg-gray-100 p-2 rounded">Cancel</button>
         <button @click="saveExclusions()"
-          :disabled="currentExclusions.length >= nameEntries.length - 1"
-          :title="currentExclusions.length >= nameEntries.length - 1 ? 'You can not exclude everyone' : ''"
-          :class="{'opacity-50 cursor-not-allowed': currentExclusions.length >= nameEntries.length - 1}"
+          :disabled="dialogSelectedExclusions.length >= participants.length - 1"
+          :title="dialogSelectedExclusions.length >= participants.length - 1 ? 'You can not exclude everyone' : ''"
+          :class="{'opacity-50 cursor-not-allowed': dialogSelectedExclusions.length >= participants.length - 1}"
           class="transition-colors bg-green-500 hover:bg-green-600 text-white p-2 rounded">Done</button>
       </div>
     </div>
@@ -153,12 +153,12 @@
       <template x-for="name in Object.keys(decodedAssignments)">
         <div class="flex items-center mb-2">
           <span class="mr-2 flex-grow" x-text="name"></span>
-          <button @click="selectedName = name"
+          <button @click="resolutionSelectedName = name"
             class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded">Show</button>
         </div>
       </template>
-      <div x-show="selectedName" class="mt-2">
-        <p class="font-bold" x-text="selectedName + ' gives gift to: ' + decodedAssignments[selectedName]"></p>
+      <div x-show="resolutionSelectedName" class="mt-2">
+        <p class="font-bold" x-text="resolutionSelectedName + ' gives gift to: ' + decodedAssignments[resolutionSelectedName]"></p>
       </div>
     </div>
     <button @click="removeAssignmentsFromURL()"

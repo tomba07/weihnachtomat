@@ -1,19 +1,23 @@
 function nameApp() {
   return {
-    nameEntries: [],
-    exclusionDialogVisible: false,
-    availableExclusions: [],
-    currentExclusions: [],
-    currentNameEntry: null,
+    //General
+    participants: [],
+    nameInputValue: "",
+    errorMessage: "",
+    warningMessage: "",
     assignmentLink: "",
-    newName: "",
-    decodedAssignments: {},
-    selectedName: null,
     showLinkCopiedMessage: false,
-    error: "",
-    warning: "",
+    //Exclusion Dialog
+    exclusionDialogVisible: false,
+    dialogExclusionOptions: [],
+    dialogSelectedExclusions: [],
+    exclusionContext: null,
+    //Settings
     showExclusions: false,
     showMaxGifts: false,
+    //Resolution
+    decodedAssignments: {},
+    resolutionSelectedName: null,
 
     init() {
       const urlParams = new URLSearchParams(window.location.search);
@@ -23,23 +27,9 @@ function nameApp() {
         this.decodedAssignments = JSON.parse(atob(encodedAssignments));
       }
       this.loadSettings();
-      this.loadNameEntries();
-      document.addEventListener("keydown", this.closeOnEscape.bind(this));
+      this.loadParticipants();
+      document.addEventListener("keydown", this.closeDialogOnEscape.bind(this));
       this.$refs.nameInput.focus();
-    },
-
-    saveSettings() {
-      localStorage.setItem(
-        "appSettings",
-        JSON.stringify({
-          showExclusions: this.showExclusions,
-          showMaxGifts: this.showMaxGifts
-        })
-      );
-    },
-
-    saveNameEntries() {
-      localStorage.setItem("nameEntries", JSON.stringify(this.nameEntries));
     },
 
     loadSettings() {
@@ -57,28 +47,42 @@ function nameApp() {
       }
     },
 
-    loadNameEntries() {
+    loadParticipants() {
       try {
-        const savedEntries = localStorage.getItem("nameEntries");
+        const savedEntries = localStorage.getItem("participants");
 
         if (savedEntries) {
-          this.nameEntries = JSON.parse(savedEntries);
+          this.participants = JSON.parse(savedEntries);
           this.verifyConfig();
         }
       } catch (e) {
         console.warn("Loading Name Entries Failed. Removing name entries from localStorage.");
-        localStorage.removeItem("nameEntries");
+        localStorage.removeItem("participants");
       }
     },
 
-    updateNameEntries() {
-      this.saveNameEntries();
+    saveSettings() {
+      localStorage.setItem(
+        "appSettings",
+        JSON.stringify({
+          showExclusions: this.showExclusions,
+          showMaxGifts: this.showMaxGifts
+        })
+      );
+    },
+
+    saveParticipants() {
+      localStorage.setItem("participants", JSON.stringify(this.participants));
+    },
+
+    updateParticipants() {
+      this.saveParticipants();
       this.verifyConfig();
       //Remove assignment link since no longer valid
       this.assignmentLink = "";
     },
 
-    closeOnEscape(event) {
+    closeDialogOnEscape(event) {
       if (event.key === "Escape" || event.keyCode === 27) {
         this.exclusionDialogVisible = false;
         this.$refs.nameInput.focus();
@@ -86,15 +90,15 @@ function nameApp() {
     },
 
     addNewName() {
-      const name = this.newName.trim();
+      const name = this.nameInputValue.trim();
 
       if (!name || name.length === 0) {
         alert("Please enter a valid name.");
-      } else if (this.nameEntries.some((entry) => entry.name === name)) {
+      } else if (this.participants.some((entry) => entry.name === name)) {
         alert("Please enter a unique name.");
       } else {
-        this.nameEntries.push({ name: name, exclusions: [], numberOfGifts: 1 });
-        this.newName = "";
+        this.participants.push({ name: name, exclusions: [], numberOfGifts: 1 });
+        this.nameInputValue = "";
       }
 
       this.$nextTick(() => {
@@ -103,28 +107,28 @@ function nameApp() {
         this.$refs.nameInput.focus();
       });
 
-      this.updateNameEntries();
+      this.updateParticipants();
+    },
+
+    removeName(nameEntry) {
+      this.participants.splice(this.participants.indexOf(nameEntry), 1);
+      this.participants.forEach((entry) => {
+        this.removeExclusion(entry, nameEntry.name);
+      });
+      this.updateParticipants();
     },
 
     showExclusionDialog(nameEntry) {
-      this.currentNameEntry = nameEntry;
-      this.currentExclusions = [...nameEntry.exclusions];
-      this.availableExclusions = this.nameEntries.map((entry) => entry.name).filter((name) => name !== nameEntry.name && Boolean(name));
+      this.exclusionContext = nameEntry;
+      this.dialogSelectedExclusions = [...nameEntry.exclusions];
+      this.dialogExclusionOptions = this.participants.map((entry) => entry.name).filter((name) => name !== nameEntry.name && Boolean(name));
       this.exclusionDialogVisible = true;
     },
 
     saveExclusions() {
-      this.currentNameEntry.exclusions = [...this.currentExclusions];
-      this.updateNameEntries();
+      this.exclusionContext.exclusions = [...this.dialogSelectedExclusions];
+      this.updateParticipants();
       this.exclusionDialogVisible = false;
-    },
-
-    removeName(nameEntry) {
-      this.nameEntries.splice(this.nameEntries.indexOf(nameEntry), 1);
-      this.nameEntries.forEach((entry) => {
-        this.removeExclusion(entry, nameEntry.name);
-      });
-      this.updateNameEntries();
     },
 
     removeExclusion(nameEntry, exclusion) {
@@ -133,7 +137,7 @@ function nameApp() {
       if (index > -1) {
         nameEntry.exclusions.splice(index, 1);
       }
-      this.updateNameEntries();
+      this.updateParticipants();
     },
 
     assign() {
@@ -149,26 +153,12 @@ function nameApp() {
       }
     },
 
-    copyToClipboard() {
-      navigator.clipboard
-        .writeText(this.assignmentLink)
-        .then(() => {
-          this.showLinkCopiedMessage = true;
-          setTimeout(() => {
-            this.showLinkCopiedMessage = false;
-          }, 500);
-        })
-        .catch((err) => {
-          console.error("Could not copy text: ", err);
-        });
-    },
-
     secretSanta() {
-      const numberOfParticipants = this.nameEntries.length,
+      const numberOfParticipants = this.participants.length,
         //For some reason, cloning with Alpine JS does not work properly, so using this workaround
-        clonedNames = getNameEntriesClone(this.nameEntries),
+        clonedNames = getParticipantsClone(this.participants),
         shuffledNames = shuffleArray(clonedNames),
-        exclusionsByName = this.nameEntries.reduce((prev, curr) => {
+        exclusionsByName = this.participants.reduce((prev, curr) => {
           prev[curr.name] = curr.exclusions;
           return prev;
         }, {});
@@ -200,20 +190,20 @@ function nameApp() {
     },
 
     verifyConfig() {
-      if (this.nameEntries.length < 3) {
+      if (this.participants.length < 3) {
         return;
       }
-      const names = this.nameEntries.map((entry) => entry.name),
-        giftsOffered = this.nameEntries.reduce((sum, entry) => sum + entry.numberOfGifts, 0),
-        numberOfParticipants = this.nameEntries.length;
+      const names = this.participants.map((entry) => entry.name),
+        giftsOffered = this.participants.reduce((sum, entry) => sum + entry.numberOfGifts, 0),
+        numberOfParticipants = this.participants.length;
 
-      this.warning = "";
-      this.error = "";
+      this.warningMessage = "";
+      this.errorMessage = "";
 
       if (giftsOffered < numberOfParticipants) {
         const giftCountDifference = Math.abs(giftsOffered - numberOfParticipants);
 
-        this.error = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${numberOfParticipants}). Difference: ${giftCountDifference}.`;
+        this.errorMessage = `Error: The total number of gifts (${giftsOffered}) is less than the number of participants (${numberOfParticipants}). Difference: ${giftCountDifference}.`;
       } else {
         const testResult = this.secretSanta() || {};
         let recipientCount = 0;
@@ -224,16 +214,30 @@ function nameApp() {
         }
 
         if (recipientCount < numberOfParticipants) {
-          this.error = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
+          this.errorMessage = "Error: Not everyone will receive a gift with the current configuration. Please check the exclusions.";
         } else {
           // Check for exclusions that only leave one option
-          this.nameEntries.forEach((entry) => {
+          this.participants.forEach((entry) => {
             if (entry.numberOfGifts > 0 && entry.exclusions.length === names.length - 2) {
-              this.warning = "Warning: Some participants have only one possible match. This can lead to predictable results.";
+              this.warningMessage = "Warning: Some participants have only one possible match. This can lead to predictable results.";
             }
           });
         }
       }
+    },
+
+    copyToClipboard() {
+      navigator.clipboard
+        .writeText(this.assignmentLink)
+        .then(() => {
+          this.showLinkCopiedMessage = true;
+          setTimeout(() => {
+            this.showLinkCopiedMessage = false;
+          }, 500);
+        })
+        .catch((err) => {
+          console.errorMessage("Could not copy text: ", err);
+        });
     }
   };
 }

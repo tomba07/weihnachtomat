@@ -16,8 +16,8 @@ function removeAssignmentsFromURL() {
   window.location.href = url;
 }
 
-function getNameEntriesClone(nameEntries) {
-  return nameEntries.map((entry) => {
+function getParticipantsClone(participants) {
+  return participants.map((entry) => {
     return {
       name: entry.name,
       numberOfGifts: entry.numberOfGifts,
