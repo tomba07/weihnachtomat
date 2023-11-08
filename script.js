@@ -16,15 +16,16 @@ function nameApp() {
     showMaxGifts: false,
 
     init() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const encodedAssignments = urlParams.get("assignments");
+
+      if (encodedAssignments) {
+        this.decodedAssignments = JSON.parse(atob(encodedAssignments));
+      }
       this.loadSettings();
       this.loadNameEntries();
       document.addEventListener("keydown", this.closeOnEscape.bind(this));
       this.$refs.nameInput.focus();
-      const urlParams = new URLSearchParams(window.location.search);
-      const encodedAssignments = urlParams.get("assignments");
-      if (encodedAssignments) {
-        this.decodedAssignments = JSON.parse(atob(encodedAssignments));
-      }
     },
 
     saveSettings() {
@@ -162,31 +163,10 @@ function nameApp() {
         });
     },
 
-    getNameEntriesClone() {
-      return this.nameEntries.map((entry) => {
-        return {
-          name: entry.name,
-          numberOfGifts: entry.numberOfGifts,
-          exclusions: entry.exclusions
-        };
-      });
-    },
-
-    getGivers(nameInfo) {
-      //Return an array of givers. If someone gives x gifts, he will be duplicated x times
-      return nameInfo.reduce((prev, curr) => {
-        for (let i = 0; i < curr.numberOfGifts; i++) {
-          prev.push(curr.name)
-        }
-
-        return prev;
-      }, [])
-    },
-
     secretSanta() {
       const numberOfParticipants = this.nameEntries.length,
         //For some reason, cloning with Alpine JS does not work properly, so using this workaround
-        clonedNames = this.getNameEntriesClone(),
+        clonedNames = getNameEntriesClone(this.nameEntries),
         shuffledNames = shuffleArray(clonedNames),
         exclusionsByName = this.nameEntries.reduce((prev, curr) => {
           prev[curr.name] = curr.exclusions;
@@ -203,7 +183,7 @@ function nameApp() {
         offeredGifts--;
       }
 
-      const givers = this.getGivers(shuffledNames),
+      const givers = getGivers(shuffledNames),
         receivers = shuffledNames.map(entry => entry.name),
         graph = new SecretSantaMatcher(givers, receivers);
 
@@ -217,12 +197,6 @@ function nameApp() {
       });
 
       return graph.generateSecretSantaPairs();
-    },
-
-    removeAssignmentsFromURL() {
-      const url = new URL(window.location);
-      url.searchParams.delete("assignments");
-      window.location.href = url;
     },
 
     verifyConfig() {
