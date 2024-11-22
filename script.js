@@ -38,7 +38,7 @@ function secretSantaApp() {
 
     loadSettings() {
       try {
-        const savedSettings = localStorage.getItem("appSettings");
+        const savedSettings = sessionStorage.getItem("appSettings");
 
         if (savedSettings) {
           const settings = JSON.parse(savedSettings);
@@ -47,27 +47,27 @@ function secretSantaApp() {
           this.groupName = settings.groupName || "";
         }
       } catch (e) {
-        console.warn("Loading Settings Failed. Removing settings from localStorage.");
-        localStorage.removeItem("appSettings");
+        console.warn("Loading Settings Failed. Removing settings from sessionStorage.");
+        sessionStorage.removeItem("appSettings");
       }
     },
 
     loadParticipants() {
       try {
-        const savedEntries = localStorage.getItem("participants");
+        const savedEntries = sessionStorage.getItem("participants");
 
         if (savedEntries) {
           this.participants = JSON.parse(savedEntries);
           this.verifyConfig();
         }
       } catch (e) {
-        console.warn("Loading Name Entries Failed. Removing name entries from localStorage.");
-        localStorage.removeItem("participants");
+        console.warn("Loading Name Entries Failed. Removing name entries from sessionStorage.");
+        sessionStorage.removeItem("participants");
       }
     },
 
     saveSettings() {
-      localStorage.setItem(
+      sessionStorage.setItem(
         "appSettings",
         JSON.stringify({
           showExclusions: this.showExclusions,
@@ -78,7 +78,7 @@ function secretSantaApp() {
     },
 
     saveParticipants() {
-      localStorage.setItem("participants", JSON.stringify(this.participants));
+      sessionStorage.setItem("participants", JSON.stringify(this.participants));
     },
 
     updateParticipants() {
@@ -127,7 +127,9 @@ function secretSantaApp() {
     showExclusionDialog(nameEntry) {
       this.exclusionContext = nameEntry;
       this.dialogSelectedExclusions = [...nameEntry.exclusions];
-      this.dialogExclusionOptions = this.participants.map((entry) => entry.name).filter((name) => name !== nameEntry.name && Boolean(name));
+      this.dialogExclusionOptions = this.participants
+        .map((entry) => entry.name)
+        .filter((name) => name !== nameEntry.name && Boolean(name));
       this.exclusionDialogVisible = true;
     },
 
@@ -165,8 +167,8 @@ function secretSantaApp() {
 
     verifyConfig() {
       const messages = getMessagesForConfig(this.participants);
-      this.errorMessage = messages.error;
-      this.warningMessage = messages.warning;
+      this.errorMessage = messages?.error;
+      this.warningMessage = messages?.warning;
     },
 
     copyToClipboard() {
