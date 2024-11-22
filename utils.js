@@ -13,6 +13,7 @@ function isObjectEmpty(objectName) {
 function removeAssignmentsFromURL() {
   const url = new URL(window.location);
   url.searchParams.delete("assignments");
+  url.searchParams.delete("groupName");
   window.location.href = url;
 }
 

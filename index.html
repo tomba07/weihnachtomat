@@ -27,6 +27,11 @@
           <span>Show Max Number of Gifts</span>
         </label>
       </div>
+      <div class="mb-4"></div>
+      <label class="block text-sm font-medium text-gray-700">Group Name</label>
+      <input type="text" x-model="groupName" placeholder="Enter group name..." 
+        x-on:input="saveSettings" class="border p-2 rounded w-full" maxlength="50" />
+      
       <!-- Error label -->
       <div x-show="participants.length > 2 && errorMessage" x-text="errorMessage"
         class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert"></div>
@@ -34,6 +39,8 @@
       <!-- Warning label -->
       <div x-show="participants.length > 2 && warningMessage" x-text="warningMessage"
         class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded relative" role="alert"></div>
+    
+        
 
       <!-- List of entered names -->
       <div id="names-list" class="flex-grow overflow-auto  mb-2">
@@ -150,6 +157,12 @@
   <!-- Resolution Panel -->
   <div x-show="!isObjectEmpty(decodedAssignments)" class="mx-auto mt-4 max-w-lg px-4">
     <div class="p-4 bg-white rounded shadow-lg">
+      <!-- Group Name Display -->
+      <div class="mb-4 text-center">
+        <h3 class="text-lg font-bold" x-text="groupName ? `Group: ${groupName}` : ''"></h3>
+      </div>
+      
+      <!-- List of assignments -->
       <template x-for="name in Object.keys(decodedAssignments)">
         <div class="flex items-center mb-2">
           <span class="mr-2 flex-grow" x-text="name"></span>
@@ -157,6 +170,8 @@
             class="bg-gray-100 hover:bg-gray-300 transition-colors p-2 rounded">Show</button>
         </div>
       </template>
+      
+      <!-- Selected Resolution -->
       <div x-show="resolutionSelectedName" class="mt-2">
         <p class="font-bold" x-text="resolutionSelectedName + ' gives gift to: ' + decodedAssignments[resolutionSelectedName]"></p>
       </div>

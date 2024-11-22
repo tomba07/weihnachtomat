@@ -22,10 +22,14 @@ function secretSantaApp() {
     init() {
       const urlParams = new URLSearchParams(window.location.search);
       const encodedAssignments = urlParams.get("assignments");
+      const groupNameFromURL = urlParams.get("groupName");
 
       if (encodedAssignments) {
         this.decodedAssignments = JSON.parse(atob(encodedAssignments));
       }
+
+      // Load group name from URL
+      this.groupName = groupNameFromURL || "";
       this.loadSettings();
       this.loadParticipants();
       document.addEventListener("keydown", this.closeDialogOnEscape.bind(this));
@@ -40,6 +44,7 @@ function secretSantaApp() {
           const settings = JSON.parse(savedSettings);
           this.showExclusions = settings.showExclusions;
           this.showMaxGifts = settings.showMaxGifts;
+          this.groupName = settings.groupName || "";
         }
       } catch (e) {
         console.warn("Loading Settings Failed. Removing settings from localStorage.");
@@ -66,7 +71,8 @@ function secretSantaApp() {
         "appSettings",
         JSON.stringify({
           showExclusions: this.showExclusions,
-          showMaxGifts: this.showMaxGifts
+          showMaxGifts: this.showMaxGifts,
+          groupName: this.groupName
         })
       );
     },
@@ -143,13 +149,17 @@ function secretSantaApp() {
     assign() {
       const assignment = secretSanta(this.participants);
 
-      console.log(assignment);
-
       if (!assignment) {
         alert("No assignment could be made!");
       } else {
         const encodedAssignments = btoa(JSON.stringify(assignment));
-        this.assignmentLink = location.protocol + "//" + location.host + location.pathname + "?assignments=" + encodedAssignments;
+        const groupNameParam = encodeURIComponent(this.groupName.trim());
+        this.assignmentLink =
+          location.protocol +
+          "//" +
+          location.host +
+          location.pathname +
+          `?assignments=${encodedAssignments}&groupName=${groupNameParam}`;
       }
     },
 
